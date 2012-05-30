@@ -10,4 +10,9 @@
 
 @implementation DHUserDefaults
 
++ (id) standardUserDefaults
+{
+	return [super standardUserDefaults];
+}
+
 @end

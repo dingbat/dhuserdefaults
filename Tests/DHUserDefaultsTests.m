@@ -12,6 +12,14 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
+@interface DHUserDefaults (myapp)
+@property (nonatomic, strong) NSString *something;
+@end
+
+@implementation DHUserDefaults (myapp)
+@dynamic something;
+@end
+
 @interface DHUserDefaultsTests : SenTestCase
 @end
 
@@ -29,7 +37,7 @@
 
 	//Gets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(something)], @"Should respond to any selector");
-	STAssertNoThrow([DHUserDefaults standardUserDefaults].something, @"Should work with .");
+	STAssertNoThrow([[DHUserDefaults standardUserDefaults].something description], @"Should work with .");
 	STAssertNoThrow([[DHUserDefaults standardUserDefaults] something], @"Should work with x");
 }
 
