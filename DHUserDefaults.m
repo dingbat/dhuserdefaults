@@ -17,10 +17,12 @@
 
 @implementation DHUserDefaults
 
+//
+// Returns the type encoding for the given property
+// See https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
+//
 - (unichar) typeForProperty:(NSString *)prop
 {
-	//see https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
-	
 	objc_property_t property = class_getProperty(self.class, [prop UTF8String]);
 	if (!property)
 		return 0;
@@ -32,6 +34,10 @@
 	return [type characterAtIndex:0];
 }
 
+//
+// Returns a "wrapped" NSUserDefaults --
+// Instance of DHUserDefaults that'll be used as a proxy
+//
 - (id) initWithDefaults:(NSUserDefaults *)proxyObj;
 {
 	self = [super init];
@@ -42,16 +48,18 @@
 	return self;
 }
 
+//
+// Method to access standardUserDefaults as an instance of DHUserDefaults 
+//
 + (id) standardUserDefaults
 {
 	return [[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
-- (BOOL) respondsToSelector:(SEL)aSelector
-{
-	return !![self methodSignatureForSelector:aSelector];
-}
-
+//
+// Forward any NSUserDefaults to the proxy
+// This allows using synchronize, setObject:forKey:, etc on a DHUserDefaults
+//
 - (id) forwardingTargetForSelector:(SEL)aSelector
 {
 	if ([NSUserDefaults instancesRespondToSelector:aSelector])
@@ -62,6 +70,9 @@
 	return self;
 }
 
+//
+// Parses "setSomething:" or "something" selectors to "something"
+//
 - (NSString *) propertyNameFromSelectorString:(NSString *)stringSelector
 {
 	int parameterCount = [[stringSelector componentsSeparatedByString:@":"] count]-1;
@@ -81,6 +92,10 @@
 	return nil;
 }
 
+//
+// Constructs a method signature (looks like "v@:i" to set an integer or "v@:@" to set an object, etc)
+// Required for forwardInvocation to work
+//
 - (NSMethodSignature *) methodSignatureForSelector:(SEL)sel
 {
 	NSString *stringSelector = NSStringFromSelector(sel);
@@ -106,6 +121,12 @@
 	return nil;
 }
 
+//
+// Pick up any "method missings" that match a method with no parameters or a setX: method
+// - Constructs "xForKey:" or "setX:forKey:" based on property type
+// - Calls the constructed method on the proxy `def` object
+// - Makes `invocation` return the return value from that method
+//
 - (void) forwardInvocation:(NSInvocation *)invocation
 {	
 	NSString *stringSelector = NSStringFromSelector(invocation.selector);
@@ -228,6 +249,11 @@
 	{
 		[super forwardInvocation:invocation];
 	}
+}
+
+- (BOOL) respondsToSelector:(SEL)aSelector
+{
+	return !![self methodSignatureForSelector:aSelector];
 }
 
 @end
