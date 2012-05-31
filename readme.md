@@ -22,7 +22,7 @@ With hardly any work!
 How do I use this thing?
 --------------
 
-Drop the sources into your project and define a category of **DHUserDefaults** in an .h file or something:
+Drop the sources into your project and define a category for **DHUserDefaults** in an .h file or something:
 
 ```objc
 @interface DHUserDefaults (MyApp)
