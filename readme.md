@@ -37,14 +37,15 @@ Now let's give it some flavor. Add properties, declared as `@dynamic` in the imp
 ```objc
 @interface DHUserDefaults (MyApp)
 
-@property (nonatomic, strong) NSString *configString;
-@property (nonatomic)         NSInteger configInt;
+@property NSInteger configInt;
+@property NSString *configString;
+@property (getter = isConfigBool) BOOL configBool;
 
 @end
 
 
 @implementation DHUserDefaults (MyApp)
-@dynamic configString, configInt;
+@dynamic configInt, configString, configBool;
 
 @end
 ```
@@ -60,15 +61,11 @@ Go ahead:
 [DHUserDefaults defaults].configString = @"hi";
 // [[NSUserDefaults standardUserDefaults] setObject:@"hi" forKey:@"configString"];
 
-[DHUserDefaults defaults].configString;
-// [[NSUserDefaults standardUserDefaults] objectForKey:@"configString"];
-
-
 [DHUserDefaults defaults].configInt = 5;
 // [[NSUserDefaults standardUserDefaults] setInteger:@"hi" forKey:@"configInt"];
 
-[DHUserDefaults defaults].configInt;
-// [[NSUserDefaults standardUserDefaults] integerForKey:@"configInt"];
+[DHUserDefaults defaults].isConfigBool;
+// [[NSUserDefaults standardUserDefaults] boolForKey:@"configBool"];
 ```
 
 (or with `[DHUserDefaults standardUserDefaults]` if you prefer.)
