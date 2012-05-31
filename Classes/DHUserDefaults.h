@@ -52,7 +52,11 @@
 	[DHUserDefaults standardUserDefaults].config1  === [[NSUserDefaults standardUserDefaults] objectForKey:@"config1"]
 
  */
-@interface DHUserDefaults : NSUserDefaults
+
+@interface DHUserDefaults : NSObject
+{
+	NSUserDefaults *def;
+}
 
 + (DHUserDefaults *) standardUserDefaults;
 
