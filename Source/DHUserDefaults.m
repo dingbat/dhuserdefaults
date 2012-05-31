@@ -28,6 +28,94 @@
 #import "DHUserDefaults.h"
 #import <objc/runtime.h>
 
+/**
+ 
+ Category on NSObject for retrieving properties and getter/setters
+
+ */
+@implementation NSObject (DHIntrospection)
+
++ (NSString *) getAttributeForProperty:(NSString *)prop prefix:(NSString *)attrPrefix
+{
+	objc_property_t property = class_getProperty(self, [prop UTF8String]);
+	if (!property)
+		return nil;
+	
+	// This will return some garbage like "Ti,GgetFoo,SsetFoo:,Vproperty"
+	// See https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
+	
+	NSString *atts = [NSString stringWithCString:property_getAttributes(property) encoding:NSUTF8StringEncoding];
+	
+	for (NSString *att in [atts componentsSeparatedByString:@","])
+		if ([att hasPrefix:attrPrefix])
+			return [att substringFromIndex:1];
+	
+	return nil;
+}
+
++ (unichar) typeForProperty:(NSString *)prop
+{
+	return [[self getAttributeForProperty:prop prefix:@"T"] characterAtIndex:0];
+}
+
++ (NSString *) getterForProperty:(NSString *)prop
+{
+	NSString *s = [self getAttributeForProperty:prop prefix:@"G"];
+	if (!s)
+		s = prop;
+	
+	return s;
+}
+
++ (NSString *) setterForProperty:(NSString *)prop
+{
+	NSString *s = [self getAttributeForProperty:prop prefix:@"S"];
+	if (!s)
+	{
+		NSString *uppercaseProp = [[[prop substringToIndex:1] uppercaseString] stringByAppendingString:[prop substringFromIndex:1]];
+		s = [NSString stringWithFormat:@"set%@:",uppercaseProp];
+	}
+	
+	return s;
+}
+
++ (NSDictionary *) propertiesByGettersOrSetters:(int)getter0setter1
+{
+	unsigned int propertyCount;
+	//copy all properties for self (will be a Class)
+	objc_property_t *properties = class_copyPropertyList(self, &propertyCount);
+	if (properties)
+	{
+		NSMutableDictionary *results = [NSMutableDictionary dictionaryWithCapacity:propertyCount];
+		
+		while (propertyCount--)
+		{
+			//get each ivar name and add it to the results
+			const char *propName = property_getName(properties[propertyCount]);
+			
+			NSString *prop = [NSString stringWithCString:propName encoding:NSASCIIStringEncoding];
+			NSString *getterSetter;
+			if (getter0setter1 == 0)
+				getterSetter = [self getterForProperty:prop];
+			else
+				getterSetter = [self setterForProperty:prop];
+			
+			[results setObject:prop forKey:getterSetter];
+		}
+		
+		free(properties);	
+		return results;
+	}
+	return nil;
+}
+
+@end
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
 @interface DHUserDefaults (private)
 
 - (id) initWithDefaults:(NSUserDefaults *)defaults;
@@ -36,27 +124,11 @@
 
 @implementation DHUserDefaults
 
-//
-// Returns the type encoding for the given property
-// See https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
-//
-- (unichar) typeForProperty:(NSString *)prop
-{
-	objc_property_t property = class_getProperty(self.class, [prop UTF8String]);
-	if (!property)
-		return 0;
-	
-	NSString *atts = [NSString stringWithCString:property_getAttributes(property) encoding:NSUTF8StringEncoding];
-	//this will return some garbage like "Ti,GgetFoo,SsetFoo:,Vproperty"
-	
-	NSString *type = [[[atts componentsSeparatedByString:@","] objectAtIndex:0] substringFromIndex:1];
-	return [type characterAtIndex:0];
-}
-
-//
-// Returns a "wrapped" NSUserDefaults --
-// Instance of DHUserDefaults that'll be used as a proxy
-//
+/**
+ 
+ Returns a "wrapped" NSUserDefaults (instance of DHUserDefaults that'll be used as a proxy)
+ 
+ */
 - (id) initWithDefaults:(NSUserDefaults *)proxyObj;
 {
 	self = [super init];
@@ -67,9 +139,11 @@
 	return self;
 }
 
-//
-// Methods to access standardUserDefaults as an instance of DHUserDefaults 
-//
+/**
+ 
+ Methods to access standardUserDefaults as an instance of DHUserDefaults 
+ 
+ */
 + (id) standardUserDefaults
 {
 	return [self defaults];
@@ -79,10 +153,12 @@
 	return [[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
-//
-// Forward any NSUserDefaults to the proxy
-// This allows using synchronize, setObject:forKey:, etc on a DHUserDefaults
-//
+/**
+ 
+ Forward any NSUserDefaults to the proxy.
+ This allows using synchronize, setObject:forKey:, etc on a DHUserDefaults
+ 
+ */
 - (id) forwardingTargetForSelector:(SEL)aSelector
 {
 	if ([NSUserDefaults instancesRespondToSelector:aSelector])
@@ -93,71 +169,58 @@
 	return self;
 }
 
-//
-// Parses "setSomething:" or "something" selectors to "something"
-//
-- (NSString *) propertyNameFromSelectorString:(NSString *)stringSelector
-{
-	int parameterCount = [[stringSelector componentsSeparatedByString:@":"] count]-1;
-
-	if (parameterCount == 0)
-	{
-		return stringSelector;
-	}
-	
-	if (parameterCount == 1 && [stringSelector hasPrefix:@"set"])
-	{
-		return [NSString stringWithFormat:@"%@%@",
-					 [[stringSelector substringWithRange:NSMakeRange(3, 1)] lowercaseString],
-					 [stringSelector substringWithRange:NSMakeRange(4, [stringSelector length]-5)]];
-	}
-	
-	return nil;
-}
-
-//
-// Constructs a method signature (looks like "v@:i" to set an integer or "v@:@" to set an object, etc)
-// Required for forwardInvocation to work
-//
+/**
+ 
+ Constructs a method signature (looks like "v@:i" to set an integer or "v@:@" to set an object, etc)
+ Required for forwardInvocation to work.
+ 
+ */
 - (NSMethodSignature *) methodSignatureForSelector:(SEL)sel
 {
 	NSString *stringSelector = NSStringFromSelector(sel);
-	NSString *propName = [self propertyNameFromSelectorString:stringSelector];
-	unichar type = [self typeForProperty:propName];
-
+	BOOL setter = ([stringSelector rangeOfString:@":"].location != NSNotFound);
+	
+	NSString *propName = [[[self class] propertiesByGettersOrSetters:setter] objectForKey:stringSelector];
+	unichar type = [[self class] typeForProperty:propName];
+	
 	if (propName && type > 0)
 	{
 		NSString *signature;
 		
-		if ([stringSelector rangeOfString:@":"].location == NSNotFound)
-		{
-			signature = [NSString stringWithFormat:@"%C%s%s",type,@encode(id),@encode(SEL)];
-		}
-		else
+		if (setter)
 		{
 			signature = [NSString stringWithFormat:@"%s%s%s%C",@encode(void),@encode(id),@encode(SEL),type];
 		}
-
+		else
+		{
+			signature = [NSString stringWithFormat:@"%C%s%s",type,@encode(id),@encode(SEL)];
+		}
+		
 		return [NSMethodSignature signatureWithObjCTypes:[signature UTF8String]];
 	}
 	
 	return nil;
 }
 
-//
-// Pick up any "method missings" that match a method with no parameters or a setX: method
-// - Constructs "xForKey:" or "setX:forKey:" based on property type
-// - Calls the constructed method on the proxy `def` object
-// - Makes `invocation` return the return value from that method
-//
+/**
+ 
+ Pick up any "method missings" that match a getter/setter
+ - Constructs "xForKey:" or "setX:forKey:" based on property type
+ - Calls the constructed method on the proxy `def` object
+ - Makes `invocation` return the return value from that method
+ 
+ */
 - (void) forwardInvocation:(NSInvocation *)invocation
 {	
 	NSString *stringSelector = NSStringFromSelector(invocation.selector);
-	NSString *propName = [self propertyNameFromSelectorString:stringSelector];
-	unichar type = [self typeForProperty:propName];
+	BOOL setter = ([stringSelector rangeOfString:@":"].location != NSNotFound);
+	
+	NSString *propName = [[[self class] propertiesByGettersOrSetters:setter] objectForKey:stringSelector];
+	unichar type = [[self class] typeForProperty:propName];
 	
 	if (propName && type > 0)
 	{
+		//Supports all the types supported by NSUserDefaults methods
 		NSString *selectorElement = (type == '@' ? @"object" : 
 									 type == 'i' ? @"integer" :
 									 type == 'l' ? @"integer" :
@@ -165,7 +228,7 @@
 									 type == 'f' ? @"float" : 
 									 type == 'd' ? @"double" : nil);
 		
-		if ([stringSelector rangeOfString:@":"].location == NSNotFound)
+		if (!setter)
 		{
 			NSString *defaultsSelectorName = [NSString stringWithFormat:@"%@ForKey:",selectorElement];
 			
@@ -174,7 +237,7 @@
 			NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[def methodSignatureForSelector:selector]];
 			inv.selector = selector;
 			inv.target = def;
-
+			
 			[inv setArgument:&propName atIndex:2];
 			
 			[inv invoke];
@@ -227,7 +290,7 @@
 			inv.target = def;
 			
 			[inv setArgument:&propName atIndex:3];
-
+			
 			if (type == 'i')
 			{
 				int param;
@@ -264,7 +327,7 @@
 				[invocation getArgument:&param atIndex:2];
 				[inv setArgument:&param atIndex:2];
 			}
-
+			
 			[inv invoke];
 		}
 	}

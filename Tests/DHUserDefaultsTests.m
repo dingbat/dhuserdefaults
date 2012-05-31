@@ -35,11 +35,13 @@
 @property (nonatomic) float floatConfig;
 @property (nonatomic) double doubleConfig;
 @property (nonatomic) BOOL boolConfig;
+@property (nonatomic, getter = isCustomGetter) BOOL customGetter;
+@property (nonatomic, strong, setter = theCustomSetter:) NSDictionary *customSetter;
 @property (nonatomic) NSComparisonResult enumConfig;
 @end
 
 @implementation DHUserDefaults (myapp)
-@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig;
+@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig, customGetter, customSetter;
 @end
 
 @interface DHUserDefaultsTests : SenTestCase
@@ -66,6 +68,17 @@
 	STAssertNil([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"Key should be removed");
 }
 
+- (void) test_custom_getters_setters
+{
+	STAssertNoThrow([DHUserDefaults defaults].isCustomGetter, @"Should be able to call custom getter");
+	STAssertNoThrow([DHUserDefaults defaults].customGetter = YES, @"Should be able to set custom getter");
+	STAssertEquals([DHUserDefaults defaults].isCustomGetter, YES, @"Should have saved to custom getter");
+
+	STAssertNoThrow([DHUserDefaults defaults].customSetter, @"Should be able to get custom setter");
+	STAssertNoThrow([[DHUserDefaults defaults] theCustomSetter:[NSDictionary dictionary]], @"Should be able to set custom setter");
+	STAssertEqualObjects([DHUserDefaults defaults].customSetter, [NSDictionary dictionary], @"Should have saved to custom setter");
+}
+
 - (void) test_object_methods
 {
 	//Sets
@@ -78,7 +91,9 @@
 	STAssertEqualObjects([DHUserDefaults defaults].objectConfig, @"hi", @"Should work with .");
 	STAssertEqualObjects([[DHUserDefaults defaults] objectConfig], @"hi", @"Should work with x");
 	
-	[[DHUserDefaults defaults] synchronize];
+	STAssertNoThrow([[DHUserDefaults defaults] hash], @"Should allow regular NSObject methods");
+	STAssertNoThrow([[DHUserDefaults defaults] objectForKey:@"hi"], @"Should allow forwarding synchronize to NSUD");
+	STAssertNoThrow([[DHUserDefaults defaults] synchronize], @"Should allow forwarding synchronize to NSUD");
 	
 	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"hi", @".= should've saved to defaults");
 	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], [[DHUserDefaults defaults] objectForKey:@"objectConfig"], @"Should reference the same userdefaults");
