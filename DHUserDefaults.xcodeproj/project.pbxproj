@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		591AE9EB1576F20400E38341 /* DHUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = 591AE9E91576F20400E38341 /* DHUserDefaults.h */; };
-		591AE9EC1576F20400E38341 /* DHUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = 591AE9EA1576F20400E38341 /* DHUserDefaults.m */; };
+		591AE9F11576FDF900E38341 /* DHUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = 591AE9EF1576FDF900E38341 /* DHUserDefaults.h */; };
+		591AE9F21576FDF900E38341 /* DHUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = 591AE9F01576FDF900E38341 /* DHUserDefaults.m */; };
 		599C70B41576A22600060FA1 /* DHUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 599C70B31576A22600060FA1 /* DHUserDefaultsTests.m */; };
 		59EFA3671576A0DD007FC0E3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59EFA3661576A0DD007FC0E3 /* Foundation.framework */; };
 		59EFA3751576A0DE007FC0E3 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 59EFA3741576A0DE007FC0E3 /* SenTestingKit.framework */; };
@@ -28,8 +28,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		591AE9E91576F20400E38341 /* DHUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DHUserDefaults.h; sourceTree = "<group>"; };
-		591AE9EA1576F20400E38341 /* DHUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHUserDefaults.m; sourceTree = "<group>"; };
+		591AE9EF1576FDF900E38341 /* DHUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DHUserDefaults.h; sourceTree = "<group>"; };
+		591AE9F01576FDF900E38341 /* DHUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHUserDefaults.m; sourceTree = "<group>"; };
 		599C70B31576A22600060FA1 /* DHUserDefaultsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHUserDefaultsTests.m; sourceTree = "<group>"; };
 		59EFA3631576A0DD007FC0E3 /* libDHUserDefaults.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libDHUserDefaults.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		59EFA3661576A0DD007FC0E3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -61,13 +61,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		591AE9ED1576F20800E38341 /* Classes */ = {
+		591AE9EE1576FDF900E38341 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				591AE9E91576F20400E38341 /* DHUserDefaults.h */,
-				591AE9EA1576F20400E38341 /* DHUserDefaults.m */,
+				591AE9EF1576FDF900E38341 /* DHUserDefaults.h */,
+				591AE9F01576FDF900E38341 /* DHUserDefaults.m */,
 			);
-			name = Classes;
+			path = Source;
 			sourceTree = "<group>";
 		};
 		599C70B11576A22600060FA1 /* Tests */ = {
@@ -81,7 +81,7 @@
 		59EFA3581576A0DB007FC0E3 = {
 			isa = PBXGroup;
 			children = (
-				591AE9ED1576F20800E38341 /* Classes */,
+				591AE9EE1576FDF900E38341 /* Source */,
 				599C70B11576A22600060FA1 /* Tests */,
 				59EFA3651576A0DD007FC0E3 /* Frameworks */,
 				59EFA3641576A0DD007FC0E3 /* Products */,
@@ -114,7 +114,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				591AE9EB1576F20400E38341 /* DHUserDefaults.h in Headers */,
+				591AE9F11576FDF900E38341 /* DHUserDefaults.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,7 +214,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				591AE9EC1576F20400E38341 /* DHUserDefaults.m in Sources */,
+				591AE9F21576FDF900E38341 /* DHUserDefaults.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
