@@ -56,6 +56,16 @@
 	STAssertThrows([[DHUserDefaults defaults] performSelector:@selector(one:two:)], @"Should break if two arg selector is passed in");
 }
 
+- (void) test_removing_keys
+{
+	STAssertNoThrow([DHUserDefaults defaults].objectConfig = @"hi", @"Should remove key");
+	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"hi", @".= should've saved to defaults");
+
+	STAssertNoThrow([DHUserDefaults defaults].objectConfig = nil, @"Should remove key");
+	STAssertNil([DHUserDefaults defaults].objectConfig, @"Key should be removed");
+	STAssertNil([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"Key should be removed");
+}
+
 - (void) test_object_methods
 {
 	//Sets
