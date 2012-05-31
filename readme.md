@@ -22,7 +22,7 @@ With hardly any work!
 How do I use this thing?
 --------------
 
-First, define a category of DHUserDefaults for your app in a .h file or something:
+Drop the sources into your project and define a category of **DHUserDefaults** in an .h file or something:
 
 ```objc
 @interface DHUserDefaults (YourApp)
@@ -51,8 +51,10 @@ Now give it some flavor. Add the keys you use often as properties, declared as `
 
 And that's it!
  
-Well,
+Now what?
 ----------
+
+Go ahead:
 
 ```objc
 [DHUserDefaults defaults].configString = @"hi";
@@ -69,6 +71,12 @@ Well,
 // [[NSUserDefaults standardUserDefaults] integerForKey:@"configInt"];
 ```
 
-isn't that nice?
+(or with `[DHUserDefaults standardUserDefaults]` if you prefer.)
 
-* Plus, there's no need to define key constants anymore!
+* You can use it just like you would with NSUserDefaults:
+
+  ```objc
+  [[DHUserDefaults defaults] synchronize];
+  ```
+
+* **Plus,** there's no need to fumble around with those key constants anymore!
