@@ -36,7 +36,6 @@
 	STAssertFalse([DHUserDefaults respondsToSelector:@selector(setConfig1:)], @"Class shouldn't respond to any selector");
 	STAssertFalse([DHUserDefaults respondsToSelector:@selector(setConfig2:)], @"Class shouldn't respond to any selector");
 	STAssertThrows([[DHUserDefaults standardUserDefaults] performSelector:@selector(one:two:)], @"Should break if two arg selector is passed in");
-	
 }
 
 - (void) test_object_methods
@@ -48,8 +47,13 @@
 	
 	//Gets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(objectConfig)], @"Should respond to any selector");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults].objectConfig description], @"Should work with .");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults] objectConfig], @"Should work with x");
+	STAssertEqualObjects([DHUserDefaults standardUserDefaults].objectConfig, @"hi", @"Should work with .");
+	STAssertEqualObjects([[DHUserDefaults standardUserDefaults] objectConfig], @"hi", @"Should work with x");
+	
+	[[DHUserDefaults standardUserDefaults] synchronize];
+	
+	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"hi", @".= should've saved to defaults");
+	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], [[DHUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"Should reference the same userdefaults");
 }
 
 - (void) test_int_methods
@@ -61,8 +65,11 @@
 	
 	//Gets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(intConfig)], @"Should respond to any selector");
-	STAssertNoThrow([DHUserDefaults standardUserDefaults].intConfig, @"Should work with .");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults] intConfig], @"Should work with x");
+	STAssertEquals([DHUserDefaults standardUserDefaults].intConfig, 5, @"Should work with .");
+	STAssertEquals([[DHUserDefaults standardUserDefaults] intConfig], 5, @"Should work with x");
+
+	STAssertEquals([[NSUserDefaults standardUserDefaults] integerForKey:@"intConfig"], 5, @".= should've saved to defaults");
+	STAssertEquals([DHUserDefaults standardUserDefaults].intConfig, [[NSUserDefaults standardUserDefaults] integerForKey:@"intConfig"], @"Should reference the same userdefaults");
 }
 
 - (void) test_float_methods
@@ -74,24 +81,27 @@
 	
 	//Gets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(floatConfig)], @"Should respond to any selector");
-	STAssertNoThrow([DHUserDefaults standardUserDefaults].floatConfig, @"Should work with .");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults] floatConfig], @"Should work with x");
+	STAssertEquals([DHUserDefaults standardUserDefaults].floatConfig, 5.0f, @"Should work with .");
+	STAssertEquals([[DHUserDefaults standardUserDefaults] floatConfig], 5.0f, @"Should work with x");
+	
+	STAssertEquals([[NSUserDefaults standardUserDefaults] floatForKey:@"floatConfig"], 5.0f, @".= should've saved to defaults");
+	STAssertEquals([DHUserDefaults standardUserDefaults].floatConfig, [[NSUserDefaults standardUserDefaults] floatForKey:@"floatConfig"], @"Should reference the same userdefaults");
 }
-
-
-// For some really strange reason setDouble: isn't working...
 
 - (void) test_double_methods
 {
 	//Sets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(setDoubleConfig:)], @"Should respond to any selector");
 	STAssertNoThrow([DHUserDefaults standardUserDefaults].doubleConfig = (double)5.0, @"Should work with .=");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults] setDoubleConfig:(double)6.0], @"Should work with setX:");
+	STAssertNoThrow([[DHUserDefaults standardUserDefaults] setDoubleConfig:(double)5.0], @"Should work with setX:");
 	
 	//Gets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(doubleConfig)], @"Should respond to any selector");
-	STAssertNoThrow([DHUserDefaults standardUserDefaults].doubleConfig, @"Should work with .");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults] doubleConfig], @"Should work with x");
+	STAssertEquals([DHUserDefaults standardUserDefaults].doubleConfig, (double)5.0, @"Should work with .");
+	STAssertEquals([[DHUserDefaults standardUserDefaults] doubleConfig], (double)5.0, @"Should work with x");
+	
+	STAssertEquals([[NSUserDefaults standardUserDefaults] doubleForKey:@"doubleConfig"], (double)5.0, @".= should've saved to defaults");
+	STAssertEquals([DHUserDefaults standardUserDefaults].doubleConfig, [[NSUserDefaults standardUserDefaults] doubleForKey:@"doubleConfig"], @"Should reference the same userdefaults");
 }
 
 - (void) test_bool_methods
@@ -103,8 +113,11 @@
 	
 	//Gets
 	STAssertTrue([[DHUserDefaults standardUserDefaults] respondsToSelector:@selector(boolConfig)], @"Should respond to any selector");
-	STAssertNoThrow([DHUserDefaults standardUserDefaults].boolConfig, @"Should work with .");
-	STAssertNoThrow([[DHUserDefaults standardUserDefaults] boolConfig], @"Should work with x");
+	STAssertEquals([DHUserDefaults standardUserDefaults].boolConfig, NO, @"Should work with .");
+	STAssertEquals([[DHUserDefaults standardUserDefaults] boolConfig], NO, @"Should work with x");
+	
+	STAssertEquals([[NSUserDefaults standardUserDefaults] boolForKey:@"boolConfig"], NO, @".= should've saved to defaults");
+	STAssertEquals([DHUserDefaults standardUserDefaults].boolConfig, [[NSUserDefaults standardUserDefaults] boolForKey:@"boolConfig"], @"Should reference the same userdefaults");
 }
 
 - (void)setUp

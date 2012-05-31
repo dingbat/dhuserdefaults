@@ -53,7 +53,9 @@
 
  */
 
-@interface DHUserDefaults : NSObject
+//Subclasses NSUserDefaults so that Xcode doesn't get angry when calling NSUserDefaults methods
+//  (will just forward those methods to `def` anyway)
+@interface DHUserDefaults : NSUserDefaults
 {
 	NSUserDefaults *def;
 }
