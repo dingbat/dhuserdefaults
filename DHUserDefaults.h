@@ -1,68 +1,36 @@
-//
-//  DHUserDefaults.h
-//  DHUserDefaults
-//
-//  Created by Dan Hassin on 5/30/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
-//
+/*
+ 
+ DHUserDefaults.h
+ 
+ Copyright (c) 2012 Dan Hassin.
+ 
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ 
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 
+ */
 
 #import <Foundation/Foundation.h>
 
 /**
  
- How do I use this thing?
+ See the readme for how to use this!
  
- Well, define a category of DHUserDefaults for your app in a .h file or something:
- 
-	 @interface DHUserDefaults (YourApp)
-	 @end
- 
-	 @implementation DHUserDefaults (YourApp)
-	 @end
- 
- Now let's make it a bit more interesting with some properties (with @dynamics in the implementation):
-
-	 @interface DHUserDefaults (YourApp)
-	 
-	 @property (nonatomic, strong) NSString *configString;
-	 @property (nonatomic) NSInteger configInt;
-
-	 @end
-
- 
-	 @implementation DHUserDefaults (YourApp)
-	 @dynamic configString, configInt;
- 
-	 @end
-
- And that's it!
- 
- Now you can call:
- 
-	[DHUserDefaults standardUserDefaults].configString = @"hi"
-	[DHUserDefaults standardUserDefaults].config2 = 55
- 
- And gets:
-
-	[DHUserDefaults standardUserDefaults].configString
-	[DHUserDefaults standardUserDefaults].config2
- 
- 
- And everything'll be saved to NSUserDefaults!
- 
-	[DHUserDefaults standardUserDefaults].configString = @"hi"
-	// === [[NSUserDefaults standardUserDefaults] setObject:@"hi" forKey:@"configString"]
- 
-	[DHUserDefaults standardUserDefaults].configString
-	// === [[NSUserDefaults standardUserDefaults] objectForKey:@"configString"]
-	
-
-	[DHUserDefaults standardUserDefaults].configInt = 5
-	// === [[NSUserDefaults standardUserDefaults] setInteger:@"hi" forKey:@"configInt"]
- 
-	[DHUserDefaults standardUserDefaults].configInt
-	// === [[NSUserDefaults standardUserDefaults] integerForKey:@"configInt"]
-
  */
 
 //Subclasses NSUserDefaults so that Xcode doesn't get angry when calling NSUserDefaults methods
@@ -73,5 +41,6 @@
 }
 
 + (DHUserDefaults *) standardUserDefaults;
++ (DHUserDefaults *) defaults;
 
 @end
