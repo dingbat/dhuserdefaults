@@ -32,7 +32,7 @@ Drop the sources into your project and define a category for **DHUserDefaults** 
 @end
 ```
  
-Now let's give it some flavor. Add properties, declared as `@dynamic` in the implementation:
+Now let's give it some flavor. Add some properties, each declared as `@dynamic` in the implementation:
 
 ```objc
 @interface DHUserDefaults (MyApp)
@@ -62,7 +62,7 @@ Go ahead:
 // [[NSUserDefaults standardUserDefaults] setObject:@"hi" forKey:@"configString"];
 
 [DHUserDefaults defaults].configInt = 5;
-// [[NSUserDefaults standardUserDefaults] setInteger:@"hi" forKey:@"configInt"];
+// [[NSUserDefaults standardUserDefaults] setInteger:5 forKey:@"configInt"];
 
 [DHUserDefaults defaults].isConfigBool;
 // [[NSUserDefaults standardUserDefaults] boolForKey:@"configBool"];
