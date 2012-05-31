@@ -30,14 +30,14 @@
 #import <SenTestingKit/SenTestingKit.h>
 
 @interface DHUserDefaults (myapp)
-@property (nonatomic, strong) NSString *objectConfig;
-@property (nonatomic) NSInteger intConfig;
-@property (nonatomic) float floatConfig;
-@property (nonatomic) double doubleConfig;
-@property (nonatomic) BOOL boolConfig;
-@property (nonatomic, getter = isCustomGetter) BOOL customGetter;
-@property (nonatomic, strong, setter = theCustomSetter:) NSDictionary *customSetter;
-@property (nonatomic) NSComparisonResult enumConfig;
+@property NSString *objectConfig;
+@property NSInteger intConfig;
+@property float floatConfig;
+@property double doubleConfig;
+@property BOOL boolConfig;
+@property (getter = isCustomGetter) BOOL customGetter;
+@property (setter = theCustomSetter:) NSDictionary *customSetter;
+@property NSComparisonResult enumConfig;
 @end
 
 @implementation DHUserDefaults (myapp)
