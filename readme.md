@@ -25,17 +25,17 @@ How do I use this thing?
 Drop the sources into your project and define a category of **DHUserDefaults** in an .h file or something:
 
 ```objc
-@interface DHUserDefaults (YourApp)
+@interface DHUserDefaults (MyApp)
 @end
 
-@implementation DHUserDefaults (YourApp)
+@implementation DHUserDefaults (MyApp)
 @end
 ```
  
-Now give it some flavor. Add the keys you use often as properties, declared as `@dynamic`.
+Now let's give it some flavor. Add properties, declared as `@dynamic` in the implementation:
 
 ```objc
-@interface DHUserDefaults (YourApp)
+@interface DHUserDefaults (MyApp)
 
 @property (nonatomic, strong) NSString *configString;
 @property (nonatomic)         NSInteger configInt;
@@ -43,7 +43,7 @@ Now give it some flavor. Add the keys you use often as properties, declared as `
 @end
 
 
-@implementation DHUserDefaults (YourApp)
+@implementation DHUserDefaults (MyApp)
 @dynamic configString, configInt;
 
 @end
