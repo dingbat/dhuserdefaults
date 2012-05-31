@@ -33,12 +33,13 @@
 @property (nonatomic, strong) NSString *objectConfig;
 @property (nonatomic) NSInteger intConfig;
 @property (nonatomic) float floatConfig;
-@property double doubleConfig;
+@property (nonatomic) double doubleConfig;
 @property (nonatomic) BOOL boolConfig;
+@property (nonatomic) NSComparisonResult enumConfig;
 @end
 
 @implementation DHUserDefaults (myapp)
-@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig;
+@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig;
 @end
 
 @interface DHUserDefaultsTests : SenTestCase
@@ -135,6 +136,22 @@
 	
 	STAssertEquals([[NSUserDefaults standardUserDefaults] boolForKey:@"boolConfig"], NO, @".= should've saved to defaults");
 	STAssertEquals([DHUserDefaults defaults].boolConfig, [[NSUserDefaults standardUserDefaults] boolForKey:@"boolConfig"], @"Should reference the same userdefaults");
+}
+
+- (void) test_enum_methods
+{
+	//Sets
+	STAssertTrue([[DHUserDefaults defaults] respondsToSelector:@selector(setEnumConfig:)], @"Should respond to any selector");
+	STAssertNoThrow([DHUserDefaults defaults].enumConfig = NSOrderedAscending, @"Should work with .=");
+	STAssertNoThrow([[DHUserDefaults defaults] setEnumConfig:NSOrderedAscending], @"Should work with setX:");
+	
+	//Gets
+	STAssertTrue([[DHUserDefaults defaults] respondsToSelector:@selector(enumConfig)], @"Should respond to any selector");
+	STAssertEquals([DHUserDefaults defaults].enumConfig, NSOrderedAscending, @"Should work with .");
+	STAssertEquals([[DHUserDefaults defaults] enumConfig], NSOrderedAscending, @"Should work with x");
+	
+	STAssertEquals([[NSUserDefaults standardUserDefaults] integerForKey:@"enumConfig"], NSOrderedAscending, @".= should've saved to defaults");
+	STAssertEquals([DHUserDefaults defaults].enumConfig, [[NSUserDefaults standardUserDefaults] integerForKey:@"enumConfig"], @"Should reference the same userdefaults");
 }
 
 - (void)setUp
