@@ -35,13 +35,15 @@
 @property float floatConfig;
 @property double doubleConfig;
 @property BOOL boolConfig;
+@property NSMutableArray *array;
+@property NSMutableDictionary *dictionary;
 @property (getter = isCustomGetter) BOOL customGetter;
 @property (setter = theCustomSetter:) NSDictionary *customSetter;
 @property NSComparisonResult enumConfig;
 @end
 
 @implementation DHUserDefaults (myapp)
-@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig, customGetter, customSetter;
+@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig, customGetter, customSetter, array, dictionary;
 @end
 
 @interface DHUserDefaultsTests : SenTestCase
@@ -79,6 +81,50 @@
 	STAssertEqualObjects([DHUserDefaults defaults].customSetter, [NSDictionary dictionary], @"Should have saved to custom setter");
 }
 
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	
+}
+
+- (void) test_kvo
+{
+	[DHUserDefaults defaults].array = [[NSMutableArray alloc] init];
+	STAssertNotNil([DHUserDefaults defaults].array,@"should've added it");
+	STAssertNotNil([[NSUserDefaults standardUserDefaults] objectForKey:@"array"],@"should've added it");
+	
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"array"] count], 0, @"should start w/0");	
+
+	[[DHUserDefaults defaults].array addObject:@"hi"];
+	
+	STAssertEquals((int)[DHUserDefaults defaults].array.count, 1, @"should have the inserted object");	
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"array"] count], 1, @"should have 1");	
+
+	[[DHUserDefaults defaults].array addObject:@"hi2"];
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"array"] count], 2, @"should have 2");	
+
+	
+	[DHUserDefaults defaults].dictionary = [NSMutableDictionary dictionary];
+	STAssertNotNil([DHUserDefaults defaults].dictionary,@"should've added it");
+	STAssertNotNil([[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"],@"should've added it");
+	
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 0, @"should start w/0");	
+	
+	NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+	[dict addObserver:self forKeyPath:@"hi" options:0 context:nil];
+	
+	[dict setObject:@"hi" forKey:@"hi"];
+	
+	
+	[[DHUserDefaults defaults].dictionary setObject:@"hello" forKey:@"hi"];
+	
+	/*
+	 Not supported yet
+	STAssertEquals((int)[DHUserDefaults defaults].dictionary.count, 1, @"should have the inserted object");	
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 1, @"should have 1");	
+	 */
+
+}
+
 - (void) test_object_methods
 {
 	//Sets
@@ -93,7 +139,7 @@
 	
 	STAssertNoThrow([[DHUserDefaults defaults] hash], @"Should allow regular NSObject methods");
 	STAssertNoThrow([[DHUserDefaults defaults] objectForKey:@"hi"], @"Should allow forwarding synchronize to NSUD");
-	STAssertNoThrow([[DHUserDefaults defaults] synchronize], @"Should allow forwarding synchronize to NSUD");
+//	STAssertNoThrow([[DHUserDefaults defaults] synchronize], @"Should allow forwarding synchronize to NSUD");
 	
 	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"hi", @".= should've saved to defaults");
 	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], [[DHUserDefaults defaults] objectForKey:@"objectConfig"], @"Should reference the same userdefaults");

@@ -124,6 +124,8 @@
 
 @implementation DHUserDefaults
 
+static DHUserDefaults *shared = nil;
+
 /**
  
  Returns a "wrapped" NSUserDefaults (instance of DHUserDefaults that'll be used as a proxy)
@@ -150,7 +152,11 @@
 }
 + (id) defaults
 {
-	return [[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
+	if (!shared)
+	{
+		shared = [[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
+	}
+	return shared;//[[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
 }
 
 /**
@@ -276,7 +282,19 @@
 			{
 				id ret;
 				[inv getReturnValue:&ret];
-				[invocation setReturnValue:&ret];
+				
+				if ([ret isKindOfClass:[NSArray class]])
+				{
+					id new = [self mutableArrayValueForKey:propName];
+					[invocation setReturnValue:&new];
+				}
+				else if ([ret isKindOfClass:[NSDictionary class]])
+				{
+					id new = [NSMutableDictionary dictionaryWithDictionary:ret];
+					[invocation setReturnValue:&new];
+				}
+				else	
+					[invocation setReturnValue:&ret];
 			}
 		}
 		else
