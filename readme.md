@@ -1,6 +1,6 @@
 **DHUserDefaults**
 =======
-A class that uses some Cocoa message forwarding magic to relieve a lot of pain in setting and retrieving NSUserDefaults.
+A class that uses some Cocoa magic like message forwarding and KVO to ease a lot of NSUserDefaulting pain.
 
 ****
 
