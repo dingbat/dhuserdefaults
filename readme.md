@@ -43,6 +43,8 @@ How do I use this thing?
 Drop the sources into your project and define a category for **DHUserDefaults** in a .h file:
 
 ```objc
+#import "DHUserDefaults.h"
+
 @interface DHUserDefaults (MyApp)
 @end
 
@@ -147,13 +149,13 @@ Lets you then... (as you can see, it can also be used outside of defaults contex
 DHUserDefaultsDictionary *dict = [DHUserDefaultsDictionary dictionary];
 
 dict.aString = @"hello";
-// [d setObject:@"hello" forKey:@"aString"];
+// [dict setObject:@"hello" forKey:@"aString"];
 
 int i = dict.anInt;
-// int i = [[d objectForKey:@"anInt"] intValue];
+// int i = [[dict objectForKey:@"anInt"] intValue];
 ```
 
-And thus...
+And thus, for the grand finale...
 
 ```objc
 [DHUserDefaults defaults].configDictionary.aString = @"Hi";
@@ -174,7 +176,7 @@ For those of you counting every character you type, that's a whopping _**600%**_
 Message forwarding
 --------
 
-And finally, you can use either of these classes just like you would with their NS counterparts:
+Lastly, you can use either of these classes just like you would with their NS counterparts:
 
 ```objc
 [[DHUserDefaults defaults] synchronize];
@@ -184,6 +186,13 @@ And finally, you can use either of these classes just like you would with their 
 DHUserDefaultsDictionary *d = [DHUserDefaultsDictionary dictionary];
 [d objectForKey:<a key>];
 ```
+
+Notes
+-------
+
+* Should be available on every iOS/Mac OS version.
+* Requires Automatic Reference Counting (ARC) to be _disabled_. If your project is using ARC:
+  * After you drop the files in, go to your active target, select "Build Phases", and add `-fno-objc-arc` to `DHUserDefaultsTests.m` in the "Compile Sources" section.
 
 License (MIT)
 ---------
