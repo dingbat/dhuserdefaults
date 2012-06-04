@@ -36,9 +36,9 @@
 @property double doubleConfig;
 @property BOOL boolConfig;
 @property NSMutableArray *array;
-@property NSMutableDictionary *dictionary;
+@property DHUserDefaultsDictionary *dictionary;
 @property (getter = isCustomGetter) BOOL customGetter;
-@property (setter = theCustomSetter:) NSDictionary *customSetter;
+@property (setter = theCustomSetter:) NSMutableDictionary *customSetter;
 @property NSComparisonResult enumConfig;
 @end
 
@@ -46,8 +46,26 @@
 @dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig, customGetter, customSetter, array, dictionary;
 @end
 
+@interface DHUserDefaultsDictionary (myapp)
+@property NSString *objectConfig;
+@property NSInteger intConfig;
+@property float floatConfig;
+@property double doubleConfig;
+@property BOOL boolConfig;
+@property NSMutableArray *array;
+@property DHUserDefaultsDictionary *dictionary;
+@property (getter = isCustomGetter) BOOL customGetter;
+@property (setter = theCustomSetter:) NSMutableDictionary *customSetter;
+@property NSComparisonResult enumConfig;
+@end
+
+@implementation DHUserDefaultsDictionary (myapp)
+@dynamic objectConfig, intConfig, floatConfig, doubleConfig, boolConfig, enumConfig, customGetter, customSetter, array, dictionary;
+@end
+
 @interface DHUserDefaultsTests : SenTestCase
 @end
+
 
 @implementation DHUserDefaultsTests
 
@@ -81,14 +99,9 @@
 	STAssertEqualObjects([DHUserDefaults defaults].customSetter, [NSDictionary dictionary], @"Should have saved to custom setter");
 }
 
-- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-	
-}
-
 - (void) test_kvo
 {
-	[DHUserDefaults defaults].array = [[NSMutableArray alloc] init];
+	[DHUserDefaults defaults].array = [NSMutableArray array];
 	STAssertNotNil([DHUserDefaults defaults].array,@"should've added it");
 	STAssertNotNil([[NSUserDefaults standardUserDefaults] objectForKey:@"array"],@"should've added it");
 	
@@ -103,26 +116,23 @@
 	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"array"] count], 2, @"should have 2");	
 
 	
-	[DHUserDefaults defaults].dictionary = [NSMutableDictionary dictionary];
+	[DHUserDefaults defaults].dictionary = [DHUserDefaultsDictionary dictionary];
 	STAssertNotNil([DHUserDefaults defaults].dictionary,@"should've added it");
 	STAssertNotNil([[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"],@"should've added it");
 	
-	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 0, @"should start w/0");	
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 0, @"should start w/0");
 	
-	NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-	[dict addObserver:self forKeyPath:@"hi" options:0 context:nil];
+	[DHUserDefaults defaults].dictionary.objectConfig = @"hello";
 	
-	[dict setObject:@"hi" forKey:@"hi"];
-	
-	
-	[[DHUserDefaults defaults].dictionary setObject:@"hello" forKey:@"hi"];
-	
-	/*
-	 Not supported yet
 	STAssertEquals((int)[DHUserDefaults defaults].dictionary.count, 1, @"should have the inserted object");	
-	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 1, @"should have 1");	
-	 */
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 1, @"should have 1");
+	STAssertEqualObjects([[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"objectConfig"], @"hello", @"should've saved 'hello'");
+	
+	[DHUserDefaults defaults].dictionary.intConfig = 25;
 
+	STAssertEquals((int)[DHUserDefaults defaults].dictionary.count, 2, @"should have the inserted object");	
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 2, @"should have 2");
+	STAssertEqualObjects([[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"intConfig"], [NSNumber numberWithInt:25], @"should've saved the 25");
 }
 
 - (void) test_object_methods
@@ -138,11 +148,13 @@
 	STAssertEqualObjects([[DHUserDefaults defaults] objectConfig], @"hi", @"Should work with x");
 	
 	STAssertNoThrow([[DHUserDefaults defaults] hash], @"Should allow regular NSObject methods");
-	STAssertNoThrow([[DHUserDefaults defaults] objectForKey:@"hi"], @"Should allow forwarding synchronize to NSUD");
-//	STAssertNoThrow([[DHUserDefaults defaults] synchronize], @"Should allow forwarding synchronize to NSUD");
 	
 	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], @"hi", @".= should've saved to defaults");
-	STAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:@"objectConfig"], [[DHUserDefaults defaults] objectForKey:@"objectConfig"], @"Should reference the same userdefaults");
+	
+	
+	DHUserDefaultsDictionary *dict = [[DHUserDefaultsDictionary alloc] init];
+	STAssertNoThrow(dict.objectConfig = @"hi",nil);
+	STAssertEqualObjects(dict.objectConfig, @"hi", nil);
 }
 
 - (void) test_int_methods
@@ -159,6 +171,10 @@
 
 	STAssertEquals([[NSUserDefaults standardUserDefaults] integerForKey:@"intConfig"], 5, @".= should've saved to defaults");
 	STAssertEquals([DHUserDefaults defaults].intConfig, [[NSUserDefaults standardUserDefaults] integerForKey:@"intConfig"], @"Should reference the same userdefaults");
+	
+	DHUserDefaultsDictionary *dict = [[DHUserDefaultsDictionary alloc] init];
+	STAssertNoThrow(dict.intConfig = 5,nil);
+	STAssertEquals(dict.intConfig, 5, nil);
 }
 
 - (void) test_float_methods
@@ -175,6 +191,10 @@
 	
 	STAssertEquals([[NSUserDefaults standardUserDefaults] floatForKey:@"floatConfig"], 5.0f, @".= should've saved to defaults");
 	STAssertEquals([DHUserDefaults defaults].floatConfig, [[NSUserDefaults standardUserDefaults] floatForKey:@"floatConfig"], @"Should reference the same userdefaults");
+	
+	DHUserDefaultsDictionary *dict = [[DHUserDefaultsDictionary alloc] init];
+	STAssertNoThrow(dict.floatConfig = 5.0f,nil);
+	STAssertEquals(dict.floatConfig, 5.0f, nil);
 }
 
 - (void) test_double_methods
@@ -191,6 +211,11 @@
 	
 	STAssertEquals([[NSUserDefaults standardUserDefaults] doubleForKey:@"doubleConfig"], (double)5.0, @".= should've saved to defaults");
 	STAssertEquals([DHUserDefaults defaults].doubleConfig, [[NSUserDefaults standardUserDefaults] doubleForKey:@"doubleConfig"], @"Should reference the same userdefaults");
+	
+	DHUserDefaultsDictionary *dict = [[DHUserDefaultsDictionary alloc] init];
+	STAssertNoThrow(dict.doubleConfig = (double)5.0,nil);
+	STAssertEquals(dict.doubleConfig, (double)5.0, nil);
+
 }
 
 - (void) test_bool_methods
@@ -207,6 +232,10 @@
 	
 	STAssertEquals([[NSUserDefaults standardUserDefaults] boolForKey:@"boolConfig"], NO, @".= should've saved to defaults");
 	STAssertEquals([DHUserDefaults defaults].boolConfig, [[NSUserDefaults standardUserDefaults] boolForKey:@"boolConfig"], @"Should reference the same userdefaults");
+	
+	DHUserDefaultsDictionary *dict = [[DHUserDefaultsDictionary alloc] init];
+	STAssertNoThrow(dict.boolConfig = YES,nil);
+	STAssertEquals(dict.boolConfig, YES, nil);
 }
 
 - (void) test_enum_methods
@@ -223,6 +252,10 @@
 	
 	STAssertEquals([[NSUserDefaults standardUserDefaults] integerForKey:@"enumConfig"], NSOrderedAscending, @".= should've saved to defaults");
 	STAssertEquals([DHUserDefaults defaults].enumConfig, [[NSUserDefaults standardUserDefaults] integerForKey:@"enumConfig"], @"Should reference the same userdefaults");
+	
+	DHUserDefaultsDictionary *dict = [[DHUserDefaultsDictionary alloc] init];
+	STAssertNoThrow(dict.enumConfig = NSOrderedAscending,nil);
+	STAssertEquals(dict.enumConfig, NSOrderedAscending, nil);
 }
 
 - (void)setUp

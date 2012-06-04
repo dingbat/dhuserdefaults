@@ -53,9 +53,9 @@
 	return nil;
 }
 
-+ (unichar) typeForProperty:(NSString *)prop
++ (NSString *) typeForProperty:(NSString *)prop
 {
-	return [[self getAttributeForProperty:prop prefix:@"T"] characterAtIndex:0];
+	return [self getAttributeForProperty:prop prefix:@"T"];
 }
 
 + (NSString *) getterForProperty:(NSString *)prop
@@ -115,71 +115,46 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+@interface DHPseudoDictionary (private)
 
-@interface DHUserDefaults (private)
-
-- (id) initWithDefaults:(NSUserDefaults *)defaults;
+//methods to override
+- (void) returnInternalValue:(NSString *)key forInvocation:(NSInvocation *)inv;
+- (void) setInternalValue:(NSString *)key fromInvocation:(NSInvocation *)inv;
 
 @end
 
-@implementation DHUserDefaults
+@interface DHPseudoDictionary (synth)
+@property (nonatomic, assign) id internalObject;
+@end
 
-static DHUserDefaults *shared = nil;
+@implementation DHPseudoDictionary (synth)
+@dynamic internalObject;
 
-/**
- 
- Returns a "wrapped" NSUserDefaults (instance of DHUserDefaults that'll be used as a proxy)
- 
- */
-- (id) initWithDefaults:(NSUserDefaults *)proxyObj;
+- (void) setInternalObject:(id)internalObject
 {
-	self = [super init];
-	if (self)
-	{
-		def = proxyObj;
-	}
-	return self;
+	_internalObject = internalObject;
 }
 
-/**
- 
- Methods to access standardUserDefaults as an instance of DHUserDefaults 
- 
- */
-+ (id) standardUserDefaults
+- (id) internalObject
 {
-	return [self defaults];
-}
-+ (id) defaults
-{
-	if (!shared)
-	{
-		shared = [[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
-	}
-	return shared;//[[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
+	return _internalObject;
 }
 
-/**
- 
- Forward any NSUserDefaults to the proxy.
- This allows using synchronize, setObject:forKey:, etc on a DHUserDefaults
- 
- */
+@end
+
+@implementation DHPseudoDictionary
+
 - (id) forwardingTargetForSelector:(SEL)aSelector
 {
-	if ([NSUserDefaults instancesRespondToSelector:aSelector])
-	{
-		return def;
-	}
+	if ([self.internalObject respondsToSelector:aSelector])
+		return self.internalObject;
 	
 	return self;
 }
 
 /**
- 
  Constructs a method signature (looks like "v@:i" to set an integer or "v@:@" to set an object, etc)
  Required for forwardInvocation to work.
- 
  */
 - (NSMethodSignature *) methodSignatureForSelector:(SEL)sel
 {
@@ -187,7 +162,7 @@ static DHUserDefaults *shared = nil;
 	BOOL setter = ([stringSelector rangeOfString:@":"].location != NSNotFound);
 	
 	NSString *propName = [[[self class] propertiesByGettersOrSetters:setter] objectForKey:stringSelector];
-	unichar type = [[self class] typeForProperty:propName];
+	unichar type = [[[self class] typeForProperty:propName] characterAtIndex:0];
 	
 	if (propName && type > 0)
 	{
@@ -208,156 +183,360 @@ static DHUserDefaults *shared = nil;
 	return nil;
 }
 
-/**
- 
- Pick up any "method missings" that match a getter/setter
- - Constructs "xForKey:" or "setX:forKey:" based on property type
- - Calls the constructed method on the proxy `def` object
- - Makes `invocation` return the return value from that method
- 
- */
-- (void) forwardInvocation:(NSInvocation *)invocation
-{	
-	NSString *stringSelector = NSStringFromSelector(invocation.selector);
-	BOOL setter = ([stringSelector rangeOfString:@":"].location != NSNotFound);
-	
-	NSString *propName = [[[self class] propertiesByGettersOrSetters:setter] objectForKey:stringSelector];
-	unichar type = [[self class] typeForProperty:propName];
-	
-	if (propName && type > 0)
-	{
-		//Supports all the types supported by NSUserDefaults methods
-		NSString *selectorElement = (type == '@' ? @"object" : 
-									 type == 'i' ? @"integer" :
-									 type == 'l' ? @"integer" :
-									 type == 'c' ? @"bool" :
-									 type == 'f' ? @"float" : 
-									 type == 'd' ? @"double" : nil);
-		
-		if (!setter)
-		{
-			NSString *defaultsSelectorName = [NSString stringWithFormat:@"%@ForKey:",selectorElement];
-			
-			SEL selector = NSSelectorFromString(defaultsSelectorName);
-			
-			NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[def methodSignatureForSelector:selector]];
-			inv.selector = selector;
-			inv.target = def;
-			
-			[inv setArgument:&propName atIndex:2];
-			
-			[inv invoke];
-			
-			if (type == 'i')
-			{
-				int ret;
-				[inv getReturnValue:&ret];
-				[invocation setReturnValue:&ret];
-			}
-			else if (type == 'l')
-			{
-				long ret;
-				[inv getReturnValue:&ret];
-				[invocation setReturnValue:&ret];
-			}
-			else if (type == 'c')
-			{
-				BOOL ret;
-				[inv getReturnValue:&ret];
-				[invocation setReturnValue:&ret];
-			}
-			else if (type == 'f')
-			{
-				float ret;
-				[inv getReturnValue:&ret];
-				[invocation setReturnValue:&ret];
-			}
-			else if (type == 'd')
-			{
-				double ret;
-				[inv getReturnValue:&ret];
-				[invocation setReturnValue:&ret];
-			}
-			else
-			{
-				id ret;
-				[inv getReturnValue:&ret];
-				
-				if ([ret isKindOfClass:[NSArray class]])
-				{
-					id new = [self mutableArrayValueForKey:propName];
-					[invocation setReturnValue:&new];
-				}
-				else if ([ret isKindOfClass:[NSDictionary class]])
-				{
-					id new = [NSMutableDictionary dictionaryWithDictionary:ret];
-					[invocation setReturnValue:&new];
-				}
-				else	
-					[invocation setReturnValue:&ret];
-			}
-		}
-		else
-		{
-			NSString *defaultsSelectorName = [NSString stringWithFormat:@"set%@:forKey:",[selectorElement capitalizedString]];
-			
-			SEL selector = NSSelectorFromString(defaultsSelectorName);
-			
-			NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[def methodSignatureForSelector:selector]];
-			inv.selector = selector;
-			inv.target = def;
-			
-			[inv setArgument:&propName atIndex:3];
-			
-			if (type == 'i')
-			{
-				int param;
-				[invocation getArgument:&param atIndex:2];
-				[inv setArgument:&param atIndex:2];
-			}
-			else if (type == 'l')
-			{
-				long param;
-				[invocation getArgument:&param atIndex:2];
-				[inv setArgument:&param atIndex:2];
-			}
-			else if (type == 'c')
-			{
-				BOOL param;
-				[invocation getArgument:&param atIndex:2];
-				[inv setArgument:&param atIndex:2];
-			}
-			else if (type == 'f')
-			{
-				float param;
-				[invocation getArgument:&param atIndex:2];
-				[inv setArgument:&param atIndex:2];
-			}
-			else if (type == 'd')
-			{
-				double param;
-				[invocation getArgument:&param atIndex:2];
-				[inv setArgument:&param atIndex:2];
-			}
-			else
-			{
-				id param;
-				[invocation getArgument:&param atIndex:2];
-				[inv setArgument:&param atIndex:2];
-			}
-			
-			[inv invoke];
-		}
-	}
-	else
-	{
-		[super forwardInvocation:invocation];
-	}
-}
-
 - (BOOL) respondsToSelector:(SEL)aSelector
 {
 	return !![self methodSignatureForSelector:aSelector];
+}
+
+/**
+ Routes an invocation to either a set or get method, passing in the property
+ (These methods need to be implemented in subclasses)
+ */
+- (void) forwardInvocation:(NSInvocation *)anInvocation
+{
+	NSString *stringSelector = NSStringFromSelector(anInvocation.selector);
+	BOOL setter = ([stringSelector rangeOfString:@":"].location != NSNotFound);
+	
+	NSString *propName = [[[self class] propertiesByGettersOrSetters:setter] objectForKey:stringSelector];
+
+	if (setter)
+	{
+		[self setInternalValue:propName fromInvocation:anInvocation];
+	}
+	else
+	{
+		[self returnInternalValue:propName forInvocation:anInvocation];
+	}
+}
+
+- (void) returnInternalValue:(NSString *)key forInvocation:(NSInvocation *)inv
+{
+	[NSException raise:@"Abstract class" format:@"returnInternalValue:forInvocation: not defined (tried to access prop %@)",key];
+}
+
+- (void) setInternalValue:(NSString *)key fromInvocation:(NSInvocation *)inv
+{
+	[NSException raise:@"Abstract class" format:@"setInternalValue:forKey: not defined (tried to set prop %@)",key];
+}
+
+@end
+
+@interface DHUserDefaultsDictionary (private)
+
+- (void) addObserver:(id)obs;
+
+@end
+
+@implementation DHUserDefaultsDictionary
+
+- (DHUserDefaultsDictionary *) init
+{
+	self = [self initWithDictionary:[NSDictionary dictionary]];
+	return self;
+}
+
++ (DHUserDefaultsDictionary *) dictionary
+{
+	return [[[DHUserDefaultsDictionary alloc] initWithDictionary:[NSDictionary dictionary]] autorelease];
+}
+
+- (DHUserDefaultsDictionary *) initWithDictionary:(NSDictionary *)dictionary
+{
+	self = [super init];
+	self.internalObject = [NSMutableDictionary dictionaryWithDictionary:dictionary];
+	return self;
+}
+
++ (DHUserDefaultsDictionary *) dictionaryWithDictionary:(NSDictionary *)dict
+{
+	return [[[DHUserDefaultsDictionary alloc] initWithDictionary:dict] autorelease];
+}
+
+- (BOOL) isEqual:(id)object
+{
+	//cool because it'll work even if object is DHUDD
+	return [object isEqual:self.internalObject];
+}
+
+- (void) setRepresentationAsArgumentToInvocation:(NSInvocation *)inv atIndex:(NSInteger)idx
+{
+	NSDictionary *dict = self.internalObject;
+	[inv setArgument:&dict atIndex:idx];
+}
+
+- (void) addObserver:(id)obs context:(NSString *)ctx
+{
+	for (NSString *prop in [[self class] propertiesByGettersOrSetters:0].allValues)
+	{
+		[self.internalObject addObserver:obs forKeyPath:prop options:0 context:ctx];
+	}
+}
+
+- (void) setInternalValue:(NSString *)propName fromInvocation:(NSInvocation *)invocation
+{
+	NSString *propType = [[self class] typeForProperty:propName];
+	unichar type = [propType characterAtIndex:0];
+	
+	id object;
+	
+	if (type == '@')
+	{
+		[invocation getArgument:&object atIndex:2];
+	}
+	else if (type == 'i')
+	{
+		int param;
+		[invocation getArgument:&param atIndex:2];
+		object = [NSNumber numberWithInt:param];
+	}
+	else if (type == 'l')
+	{
+		long param;
+		[invocation getArgument:&param atIndex:2];
+		object = [NSNumber numberWithLong:param];
+	}
+	else if (type == 'c')
+	{
+		BOOL param;
+		[invocation getArgument:&param atIndex:2];
+		object = [NSNumber numberWithBool:param];
+	}
+	else if (type == 'f')
+	{
+		float param;
+		[invocation getArgument:&param atIndex:2];
+		object = [NSNumber numberWithFloat:param];
+	}
+	else if (type == 'd')
+	{
+		double param;
+		[invocation getArgument:&param atIndex:2];
+		object = [NSNumber numberWithDouble:param];
+	}
+	
+	[self.internalObject setObject:object forKey:propName];
+}
+
+- (void) returnInternalValue:(NSString *)propName forInvocation:(NSInvocation *)invocation
+{
+	NSString *propType = [[self class] typeForProperty:propName];
+	unichar type = [propType characterAtIndex:0];
+	
+	id obj = [self.internalObject objectForKey:propName];
+	
+	if (type == '@')
+	{
+		[invocation setReturnValue:&obj];
+	}
+	else if (type == 'i')
+	{
+		int num = [obj intValue];
+		[invocation setReturnValue:&num];
+	}
+	else if (type == 'l')
+	{
+		long num = [obj longValue];
+		[invocation setReturnValue:&num];
+	}
+	else if (type == 'c')
+	{
+		BOOL num = [obj boolValue];
+		[invocation setReturnValue:&num];
+	}
+	else if (type == 'f')
+	{
+		float num = [obj floatValue];
+		[invocation setReturnValue:&num];
+	}
+	else if (type == 'd')
+	{
+		double num = [obj doubleValue];
+		[invocation setReturnValue:&num];
+	}
+}
+
+
+@end
+
+
+@interface DHUserDefaults (private)
+
+- (id) initWithDefaults:(NSUserDefaults *)defaults;
+
+@end
+
+
+@implementation DHUserDefaults
+
+static DHUserDefaults *shared = nil;
+
+- (id) initWithDefaults:(NSUserDefaults *)proxyDefaults;
+{
+	self = [super init];
+	self.internalObject = proxyDefaults;
+	return self;
+}
+
++ (id) standardUserDefaults
+{
+	return [self defaults];
+}
+
++ (id) defaults
+{
+	if (!shared)
+	{
+		shared = [[DHUserDefaults alloc] initWithDefaults:[NSUserDefaults standardUserDefaults]];
+	}
+	return shared;
+}
+
+- (NSString *) selectorElementForType:(unichar)type
+{
+	NSString *selectorElement = (type == '@' ? @"object" : 
+								 type == 'i' ? @"integer" :
+								 type == 'l' ? @"integer" :
+								 type == 'c' ? @"bool" :
+								 type == 'f' ? @"float" : 
+								 type == 'd' ? @"double" : nil);
+	return selectorElement;
+}
+
+- (void) setInternalValue:(NSString *)propName fromInvocation:(NSInvocation *)invocation
+{
+	NSString *propType = [[self class] typeForProperty:propName];
+	unichar type = [propType characterAtIndex:0];
+	
+	NSString *defaultsSelectorName = [NSString stringWithFormat:@"set%@:forKey:",[[self selectorElementForType:type] capitalizedString]];
+	
+	SEL selector = NSSelectorFromString(defaultsSelectorName);
+	
+	NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[self.internalObject methodSignatureForSelector:selector]];
+	inv.selector = selector;
+	inv.target = self.internalObject;
+	
+	[inv setArgument:&propName atIndex:3];
+		
+	if (type == 'i')
+	{
+		int param;
+		[invocation getArgument:&param atIndex:2];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'l')
+	{
+		long param;
+		[invocation getArgument:&param atIndex:2];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'c')
+	{
+		BOOL param;
+		[invocation getArgument:&param atIndex:2];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'f')
+	{
+		float param;
+		[invocation getArgument:&param atIndex:2];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'd')
+	{
+		double param;
+		[invocation getArgument:&param atIndex:2];
+		[inv setArgument:&param atIndex:2];
+	}
+	else
+	{
+		id param;
+		[invocation getArgument:&param atIndex:2];
+		
+		if ([param isKindOfClass:[DHUserDefaultsDictionary class]])
+		{
+			if (![self.internalObject objectForKey:propName])
+				[param addObserver:self context:propName];
+			
+			[param setRepresentationAsArgumentToInvocation:inv atIndex:2];
+		}
+		else
+			[inv setArgument:&param atIndex:2];
+	}
+	
+	[inv invoke];
+}
+
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	[self.internalObject setObject:object forKey:context];
+}
+
+- (void) returnInternalValue:(NSString *)propName forInvocation:(NSInvocation *)invocation
+{
+	NSString *propType = [[self class] typeForProperty:propName];
+	unichar type = [propType characterAtIndex:0];
+	
+	NSString *defaultsSelectorName = [NSString stringWithFormat:@"%@ForKey:",[self selectorElementForType:type]];
+	
+	SEL selector = NSSelectorFromString(defaultsSelectorName);
+	
+	NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[self.internalObject methodSignatureForSelector:selector]];
+	inv.selector = selector;
+	inv.target = self.internalObject;
+	
+	[inv setArgument:&propName atIndex:2];
+	
+	[inv invoke];
+	
+	if (type == 'i')
+	{
+		int ret;
+		[inv getReturnValue:&ret];
+		[invocation setReturnValue:&ret];
+	}
+	else if (type == 'l')
+	{
+		long ret;
+		[inv getReturnValue:&ret];
+		[invocation setReturnValue:&ret];
+	}
+	else if (type == 'c')
+	{
+		BOOL ret;
+		[inv getReturnValue:&ret];
+		[invocation setReturnValue:&ret];
+	}
+	else if (type == 'f')
+	{
+		float ret;
+		[inv getReturnValue:&ret];
+		[invocation setReturnValue:&ret];
+	}
+	else if (type == 'd')
+	{
+		double ret;
+		[inv getReturnValue:&ret];
+		[invocation setReturnValue:&ret];
+	}
+	else
+	{
+		id ret;
+		[inv getReturnValue:&ret];
+		
+		if ([ret isKindOfClass:[NSArray class]])
+		{
+			id new = [self.internalObject mutableArrayValueForKey:propName];
+			[invocation setReturnValue:&new];
+		}
+		else if ([propType isEqualToString:@"@\"DHUserDefaultsDictionary\""])
+		{
+			DHUserDefaultsDictionary *new = [DHUserDefaultsDictionary dictionaryWithDictionary:ret];
+			[new addObserver:self context:propName];
+			[invocation setReturnValue:&new];
+		}
+		else	
+			[invocation setReturnValue:&ret];
+	}
 }
 
 @end

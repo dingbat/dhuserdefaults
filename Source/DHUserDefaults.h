@@ -33,14 +33,52 @@
  
  */
 
-//Subclasses NSUserDefaults so that Xcode doesn't get angry when calling NSUserDefaults methods
-//  (will just forward those methods to `def` anyway)
-@interface DHUserDefaults : NSUserDefaults
+@interface DHPseudoDictionary : NSObject
 {
-	NSUserDefaults *def;
+	id _internalObject;
 }
+@end
+
+@interface DHUserDefaults : DHPseudoDictionary
 
 + (DHUserDefaults *) standardUserDefaults;
 + (DHUserDefaults *) defaults;
 
 @end
+
+@interface DHUserDefaultsDictionary : DHPseudoDictionary
+
+- (id) init;
+- (id) initWithDictionary:(NSDictionary *)dict;
+
++ (DHUserDefaultsDictionary *) dictionary;
++ (DHUserDefaultsDictionary *) dictionaryWithDictionary:(NSDictionary *)dict;
+
+@end
+
+
+// These aren't actually implemented in DHUserDefaultsDictionary - these will be forwarded to the internal object
+// Xcode gets angry cause it doesn't recognize them though, so here are just some common dictionary methods
+// If you need any other ones just add them here
+//    NOTE: init methods (or factory methods) WILL NOT WORK HERE - see how -init and +dictionary etc are implemented
+@interface DHUserDefaultsDictionary (DHUserDefaultsDictionaryForwarding)
+
+- (int) count;
+- (NSArray *) allKeys;
+- (NSArray *) allValues;
+- (void) setObject:(id)obj forKey:(id)aKey;
+- (id) objectForKey:(id)aKey;
+
+@end
+
+
+// These aren't actually implemented in DHUserDefaults - these will be forwarded to the internal object
+// Xcode gets angry cause it doesn't recognize them though, so here are just some common dictionary methods
+// If you need any other ones just add them here
+//    NOTE: init methods (or factory methods) WILL NOT WORK HERE - see how +standardUserDefaults is implemented
+@interface DHUserDefaults (DHUserDefaultsForwarding)
+
+- (void) synchronize;
+
+@end
+
