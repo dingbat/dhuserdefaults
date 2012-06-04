@@ -1,6 +1,6 @@
 **DHUserDefaults**
 =======
-A class that uses some Cocoa message forwarding magic to make setting and retrieving NSUserDefaults easier.
+A class that uses some Cocoa message forwarding magic to relieve a lot of pain in setting and retrieving NSUserDefaults.
 
 ****
 
@@ -9,20 +9,38 @@ I'm talking about this:
 ```objc
 [[NSUserDefaults standardUserDefaults] setObject:@"hello" forKey:@"someSetting"];
 ```
+```objc
+NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+NSMutableArray *theArray = [NSMutableArray arrayWithArray:[defaults objectForKey:@"array"]];
+[theArray addObject:@"hi"];
+[defaults setObject:theArray forKey:@"array"];
+```
+```objc
+NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+NSMutableDictionary *theDict = [NSMutableDictionary dictionaryWithDictionary:[defaults objectForKey:@"dict"]];
+[theDict setObject:[NSNumber numberWithInt:5] forKey:@"someInteger"];
+[defaults setObject:theDict forKey:@"dict"];
+```
 
 into this:
 
 ```objc
 [DHUserDefaults defaults].someSetting = @"hello";
 ```
+```objc
+[[DHUserDefaults defaults].array addObject:@"hi"];
+```
+```objc
+[DHUserDefaults defaults].dict.someInteger = 5;
+```
 
-With hardly any work!
+### **o_o**
 
 
 How do I use this thing?
 --------------
 
-Drop the sources into your project and define a category for **DHUserDefaults** in an .h file or something:
+Drop the sources into your project and define a category for **DHUserDefaults** in a .h file:
 
 ```objc
 @interface DHUserDefaults (MyApp)
@@ -32,7 +50,7 @@ Drop the sources into your project and define a category for **DHUserDefaults** 
 @end
 ```
  
-Now let's give it some flavor. Add some properties, each declared as `@dynamic` in the implementation:
+Now, give it some flavor. Add some properties, each declared as `@dynamic` in the implementation:
 
 ```objc
 @interface DHUserDefaults (MyApp)
@@ -50,12 +68,9 @@ Now let's give it some flavor. Add some properties, each declared as `@dynamic` 
 @end
 ```
 
-And that's it!
- 
-Now what?
-----------
+That's it! And no need to fumble around with key constants anymore!
 
-Go ahead:
+Enjoy:
 
 ```objc
 [DHUserDefaults defaults].configString = @"hi";
@@ -64,16 +79,120 @@ Go ahead:
 [DHUserDefaults defaults].configInt = 5;
 // [[NSUserDefaults standardUserDefaults] setInteger:5 forKey:@"configInt"];
 
-[DHUserDefaults defaults].isConfigBool;
-// [[NSUserDefaults standardUserDefaults] boolForKey:@"configBool"];
+BOOL b = [DHUserDefaults defaults].isConfigBool;
+// BOOL b = [[NSUserDefaults standardUserDefaults] boolForKey:@"configBool"];
+```
+ 
+(or with `[DHUserDefaults standardUserDefaults]` if you prefer.)
+ 
+More magic!
+----------
+
+NSUserDefaults only supports immutable arrays and dictionaries, meaning that you have to retrieve your container, mutate it, and then re-set it. DHUserDefaults solves this too.
+
+Given:
+
+```objc
+@interface DHUserDefaults (MyApp)
+
+@property NSMutableArray *configArray;
+@property DHUserDefaultsDictionary *configDictionary;
+// (DHUserDefaultsDictionary used instead of NSMutableDictionary)
+
+@end
+
+
+@implementation DHUserDefaults (MyApp)
+@dynamic configArray, configDictionary;
+
+@end
 ```
 
-(or with `[DHUserDefaults standardUserDefaults]` if you prefer.)
+You can very easily update your properties (which can already be mutable), without having to set it back to defaults:
 
-* You can use it just like you would with NSUserDefaults:
+```objc
+[[DHUserDefaults defaults].configArray addObject:@"hi"];
+// NSMutableArray *theArray = [NSMutableArray arrayWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"configArray"]];
+// [theArray addObject:@"hi"];
+// [[NSUserDefaults standardUserDefaults] setObject:theArray forKey:@"configArray"];
 
-  ```objc
-  [[DHUserDefaults defaults] synchronize];
-  ```
+[[DHUserDefaults defaults].configDictionary setObject:@"hi" forKey:@"aString"];
+// NSMutableDictionary *theDict = [NSMutableDictionary dictionaryWithDictionary:[[NSUserDefaults standardUserDefaults] objectForKey:@"configDictionary"]];
+// [theDict setObject:@"hi" forKey:@"aString"];
+// [[NSUserDefaults standardUserDefaults] setObject:theDict forKey:@"configDictionary"];
+```
 
-* **Plus,** there's no need to fumble around with those key constants anymore!
+Give me more!
+---------
+
+_And_, the included **DHUserDefaultsDictionary** class (used instead of NSMutableDictionary, but identical) supports the dot-notation magic too! This is done the same as above, this time defining a category on **DHUserDefaultsDictionary**:
+
+```objc
+@interface DHUserDefaultsDictionary (MyApp)
+
+@property NSString *aString;
+@property int anInt;  // Bam! Primitive types in a dictionary! (works by autoconversion to/from NSNumber)
+
+@end
+
+@implementation DHUserDefaultsDictionary (MyApp)
+@dynamic aString, anInt;
+
+@end
+```
+
+Lets you then... (as you can see, it can also be used outside of defaults context)
+
+```objc
+DHUserDefaultsDictionary *dict = [DHUserDefaultsDictionary dictionary];
+
+dict.aString = @"hello";
+// [d setObject:@"hello" forKey:@"aString"];
+
+int i = dict.anInt;
+// int i = [[d objectForKey:@"anInt"] intValue];
+```
+
+And thus...
+
+```objc
+[DHUserDefaults defaults].configDictionary.aString = @"Hi";
+// NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+// NSMutableDictionary *theDict = [NSMutableDictionary dictionaryWithDictionary:[defaults objectForKey:@"configDictionary"]];
+// [theDict setObject:@"hi" forKey:@"aString"];
+// [defaults setObject:theDict forKey:@"configDictionary"];
+
+[DHUserDefaults defaults].configDictionary.anInt = 5;
+// NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+// NSMutableDictionary *theDict = [NSMutableDictionary dictionaryWithDictionary:[defaults objectForKey:@"configDictionary"]];
+// [theDict setObject:[NSNumber numberWithInt:5] forKey:@"anInt"];
+// [defaults setObject:theDict forKey:@"configDictionary"];
+```
+
+For those of you counting every character you type, that's a whopping _**600%**_ greater efficiency.
+
+Message forwarding
+--------
+
+And finally, you can use either of these classes just like you would with their NS counterparts:
+
+```objc
+[[DHUserDefaults defaults] synchronize];
+```
+
+```objc
+DHUserDefaultsDictionary *d = [DHUserDefaultsDictionary dictionary];
+[d objectForKey:<a key>];
+```
+
+License (MIT)
+---------
+
+Copyright (c) 2012 Dan Hassin.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
