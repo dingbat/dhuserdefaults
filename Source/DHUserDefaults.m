@@ -33,7 +33,7 @@
  Category on NSObject for retrieving properties and getter/setters
 
  */
-@implementation NSObject (DHIntrospection)
+@implementation DHPseudoDictionary (DHIntrospection)
 
 + (NSString *) getAttributeForProperty:(NSString *)prop prefix:(NSString *)attrPrefix
 {
