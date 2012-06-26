@@ -40,7 +40,9 @@ into this:
 How do I use this thing?
 --------------
 
-Drop the sources into your project and define a category for **DHUserDefaults** in a .h file:
+Drop the sources into your project. (If you're using ARC, you'll need to disable it for DHUserDefaults. Go to your active target, select "Build Phases", and add `-fno-objc-arc` to `DHUserDefaultsTests.m` in the "Compile Sources" section.)
+
+Define a category for **DHUserDefaults** in a .h file:
 
 ```objc
 #import "DHUserDefaults.h"
