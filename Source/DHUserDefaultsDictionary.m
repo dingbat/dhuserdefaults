@@ -47,6 +47,13 @@
 	[self setObject:dict forKey:dict.observerContext];
 }
 
+//this is if this dictionary has any arrays attached to it
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	[observer pseudoDictionaryWasModified:self];
+}
+
+
 - (id) objectForKey:(id)aKey
 {
 	id obj = [self.internalObject objectForKey:aKey];
@@ -55,6 +62,11 @@
 		obj = [DHUserDefaultsDictionary dictionaryWithDictionary:obj];
 		[obj setObserver:self];
 		[obj setObserverContext:aKey];
+	}
+	if ([obj isKindOfClass:[NSArray class]])
+	{
+		obj = [self.internalObject mutableArrayValueForKey:aKey];
+		[self.internalObject addObserver:self forKeyPath:aKey options:0 context:nil];
 	}
 	
 	return obj;

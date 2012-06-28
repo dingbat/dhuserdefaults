@@ -101,6 +101,8 @@
 
 - (void) test_kvo
 {
+	/** Arrays **/
+	
 	[DHUserDefaults defaults].array = [NSMutableArray array];
 	STAssertNotNil([DHUserDefaults defaults].array,@"should've added it");
 	STAssertNotNil([[NSUserDefaults standardUserDefaults] objectForKey:@"array"],@"should've added it");
@@ -115,6 +117,8 @@
 	[[DHUserDefaults defaults].array addObject:@"hi2"];
 	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"array"] count], 2, @"should have 2");	
 
+	
+	/** Dictionaries **/
 	
 	[DHUserDefaults defaults].dictionary = [DHUserDefaultsDictionary dictionary];
 	STAssertNotNil([DHUserDefaults defaults].dictionary,@"should've added it");
@@ -145,6 +149,12 @@
 	[DHUserDefaults defaults].dictionary.dictionary.intConfig = 10;
 
 	STAssertEquals((int)[[[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"dictionary"] objectForKey:@"intConfig"] intValue], 10, @"should have the inserted object");
+	
+	
+	[DHUserDefaults defaults].dictionary.dictionary.array = [NSMutableArray array];
+	[[DHUserDefaults defaults].dictionary.dictionary.array addObject:@"hi!"];
+	
+	STAssertEqualObjects([[[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"dictionary"] objectForKey:@"array"] lastObject], @"hi!", @"should have the inserted object");
 }
 
 - (void) test_object_methods
