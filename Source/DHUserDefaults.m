@@ -119,7 +119,6 @@ static DHUserDefaults *shared = nil;
 			[param setObserverContext:propName];
 			
 			NSDictionary *dict = [param internalObject];
-			NSLog(@"got dict %@",dict);
 			[inv setArgument:&dict atIndex:2];
 		}
 		else
