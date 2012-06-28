@@ -123,6 +123,14 @@
 
 @end
 
+@interface DHUserDefaults (private)
+
+- (id) initWithDefaults:(NSUserDefaults *)defaults;
+
+- (void) dictionaryUpdated:(NSDictionary *)dict context:(NSString *)context;
+
+@end
+
 @interface DHPseudoDictionary (synth)
 @property (nonatomic, assign) id internalObject;
 @end
@@ -223,11 +231,17 @@
 
 @interface DHUserDefaultsDictionary (private)
 
-- (void) addObserver:(id)obs;
+- (void) setObserver:(id)o withContext:(NSString *)c;
 
 @end
 
 @implementation DHUserDefaultsDictionary
+
+- (void) setObserver:(id)o withContext:(NSString *)c
+{
+	context = c;
+	observer = o;
+}
 
 - (DHUserDefaultsDictionary *) init
 {
@@ -264,12 +278,11 @@
 	[inv setArgument:&dict atIndex:idx];
 }
 
-- (void) addObserver:(id)obs context:(NSString *)ctx
+- (void) setObject:(id)obj forKey:(id)aKey
 {
-	for (NSString *prop in [[self class] propertiesByGettersOrSetters:0].allValues)
-	{
-		[self.internalObject addObserver:obs forKeyPath:prop options:0 context:ctx];
-	}
+	[self.internalObject setObject:observer forKey:aKey];
+	
+	[observer dictionaryUpdated:self.internalObject context:context];
 }
 
 - (void) setInternalValue:(NSString *)propName fromInvocation:(NSInvocation *)invocation
@@ -314,7 +327,7 @@
 		object = [NSNumber numberWithDouble:param];
 	}
 	
-	[self.internalObject setObject:object forKey:propName];
+	[self setObject:object forKey:propName];
 }
 
 - (void) returnInternalValue:(NSString *)propName forInvocation:(NSInvocation *)invocation
@@ -355,13 +368,6 @@
 	}
 }
 
-
-@end
-
-
-@interface DHUserDefaults (private)
-
-- (id) initWithDefaults:(NSUserDefaults *)defaults;
 
 @end
 
@@ -453,10 +459,7 @@ static DHUserDefaults *shared = nil;
 		[invocation getArgument:&param atIndex:2];
 		
 		if ([param isKindOfClass:[DHUserDefaultsDictionary class]])
-		{
-			if (![self.internalObject objectForKey:propName])
-				[param addObserver:self context:propName];
-			
+		{			
 			[param setRepresentationAsArgumentToInvocation:inv atIndex:2];
 		}
 		else
@@ -466,9 +469,10 @@ static DHUserDefaults *shared = nil;
 	[inv invoke];
 }
 
-- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+
+- (void) dictionaryUpdated:(NSDictionary *)dict context:(NSString *)context
 {
-	[self.internalObject setObject:object forKey:context];
+	[self.internalObject setObject:dict forKey:context];
 }
 
 - (void) returnInternalValue:(NSString *)propName forInvocation:(NSInvocation *)invocation
@@ -531,7 +535,7 @@ static DHUserDefaults *shared = nil;
 		else if ([propType isEqualToString:@"@\"DHUserDefaultsDictionary\""])
 		{
 			DHUserDefaultsDictionary *new = [DHUserDefaultsDictionary dictionaryWithDictionary:ret];
-			[new addObserver:self context:propName];
+			[new setObserver:self withContext:propName];
 			[invocation setReturnValue:&new];
 		}
 		else	

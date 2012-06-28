@@ -47,6 +47,10 @@
 @end
 
 @interface DHUserDefaultsDictionary : DHPseudoDictionary
+{
+	id observer;
+	NSString *context;
+}
 
 - (id) init;
 - (id) initWithDictionary:(NSDictionary *)dict;
