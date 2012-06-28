@@ -40,7 +40,7 @@ into this:
 How do I use this thing?
 --------------
 
-Drop the sources into your project. (If you're using ARC, you'll need to disable it for DHUserDefaults. Go to your active target, select "Build Phases", and add `-fno-objc-arc` to `DHUserDefaultsTests.m` in the "Compile Sources" section.)
+Drop the sources into your project. (If you're using ARC, you'll need to disable it for DHUserDefaults. Go to your active target, select "Build Phases", and add `-fno-objc-arc` to the DHUserDefaults source files in the "Compile Sources" section.)
 
 Define a category for **DHUserDefaults** in a .h file:
 
@@ -194,7 +194,7 @@ Notes
 
 * Should be available on every iOS/Mac OS version.
 * Requires Automatic Reference Counting (ARC) to be _disabled_. If your project is using ARC:
-  * After you drop the files in, go to your active target, select "Build Phases", and add `-fno-objc-arc` to `DHUserDefaultsTests.m` in the "Compile Sources" section.
+  * After you drop the files in, go to your active target, select "Build Phases", and add `-fno-objc-arc` to the DHUserDefaults source files in the "Compile Sources" section.
 
 License (MIT)
 ---------
