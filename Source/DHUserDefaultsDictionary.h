@@ -8,19 +8,24 @@
 
 #import "DHPseudoDictionary.h"
 
-@interface DHUserDefaultsDictionary : DHPseudoDictionary
-{
-	id observer;
-	NSString *context;
-}
+@class DHUserDefaultsDictionary;
 
-- (void) setObserver:(id)o withContext:(NSString *)c;
+@protocol DHPseudoDictionaryObserving <NSObject>
+
+- (void) pseudoDictionaryWasModified:(DHUserDefaultsDictionary *)dict;
+
+@end
+
+@interface DHUserDefaultsDictionary : DHPseudoDictionary <DHPseudoDictionaryObserving>
 
 - (id) init;
 - (id) initWithDictionary:(NSDictionary *)dict;
 
 + (DHUserDefaultsDictionary *) dictionary;
 + (DHUserDefaultsDictionary *) dictionaryWithDictionary:(NSDictionary *)dict;
+
+@property (nonatomic, assign) id<DHPseudoDictionaryObserving> observer;
+@property (nonatomic, strong) NSString *observerContext;
 
 @end
 

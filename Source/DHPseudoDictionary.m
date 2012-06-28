@@ -37,7 +37,7 @@
 
 - (id) forwardingTargetForSelector:(SEL)aSelector
 {
-	if ([self.internalObject respondsToSelector:aSelector])
+	if ([self.internalObject respondsToSelector:aSelector] && ![self methodSignatureForSelector:aSelector])
 		return self.internalObject;
 	
 	return self;
@@ -107,7 +107,7 @@
 
 - (void) setInternalValue:(NSString *)key fromInvocation:(NSInvocation *)inv
 {
-	[NSException raise:@"Abstract class" format:@"setInternalValue:forKey: not defined (tried to set prop %@)",key];
+	[NSException raise:@"Abstract class" format:@"setInternalValue:fromInvocation: not defined (tried to set prop %@)",key];
 }
 
 

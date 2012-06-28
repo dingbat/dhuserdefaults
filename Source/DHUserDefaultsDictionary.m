@@ -10,12 +10,7 @@
 #import "DHUserDefaults.h"
 
 @implementation DHUserDefaultsDictionary
-
-- (void) setObserver:(id)o withContext:(NSString *)c
-{
-	context = c;
-	observer = o;
-}
+@synthesize observer, observerContext;
 
 - (DHUserDefaultsDictionary *) init
 {
@@ -46,12 +41,37 @@
 	return [object isEqual:self.internalObject];
 }
 
+//this is if THIS dictionary has any dictionaries attached to it
+- (void) pseudoDictionaryWasModified:(DHUserDefaultsDictionary *)dict
+{
+	[self setObject:dict forKey:dict.observerContext];
+}
+
+- (id) objectForKey:(id)aKey
+{
+	id obj = [self.internalObject objectForKey:aKey];
+	if ([obj isKindOfClass:[NSDictionary class]])
+	{
+		obj = [DHUserDefaultsDictionary dictionaryWithDictionary:obj];
+		[obj setObserver:self];
+		[obj setObserverContext:aKey];
+	}
+	
+	return obj;
+}
 
 - (void) setObject:(id)obj forKey:(id)aKey
 {
+	if ([obj isKindOfClass:[DHUserDefaultsDictionary class]])
+	{
+		[obj setObserver:self];
+		[obj setObserverContext:aKey];
+		obj = [obj internalObject];
+	}
+	
 	[self.internalObject setObject:obj forKey:aKey];
 	
-	[observer dictionaryUpdated:self.internalObject context:context];
+	[self.observer pseudoDictionaryWasModified:self];
 }
 
 - (void) setInternalValue:(NSString *)propName fromInvocation:(NSInvocation *)invocation
@@ -104,7 +124,7 @@
 	NSString *propType = [[self class] typeForProperty:propName];
 	unichar type = [propType characterAtIndex:0];
 	
-	id obj = [self.internalObject objectForKey:propName];
+	id obj = [self objectForKey:propName];
 	
 	if (type == '@')
 	{

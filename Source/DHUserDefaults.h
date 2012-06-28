@@ -29,12 +29,10 @@
 #import "DHPseudoDictionary.h"
 #import "DHUserDefaultsDictionary.h"
 
-@interface DHUserDefaults : DHPseudoDictionary
+@interface DHUserDefaults : DHPseudoDictionary <DHPseudoDictionaryObserving>
 
 + (DHUserDefaults *) standardUserDefaults;
 + (DHUserDefaults *) defaults;
-
-- (void) dictionaryUpdated:(NSDictionary *)dict context:(NSString *)context;
 
 @end
 

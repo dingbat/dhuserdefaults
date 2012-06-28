@@ -52,3 +52,4 @@
 + (NSDictionary *) propertiesByGettersOrSetters:(int)getter0setter1;
 
 @end
+

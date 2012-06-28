@@ -138,6 +138,15 @@
 	STAssertEqualObjects([[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"intConfig"], [NSNumber numberWithInt:25], @"should've saved the 25");
 }
 
+- (void) test_nested_dictionaries
+{
+	[DHUserDefaults defaults].dictionary = [DHUserDefaultsDictionary dictionary];
+	[DHUserDefaults defaults].dictionary.dictionary = [DHUserDefaultsDictionary dictionary];
+	[DHUserDefaults defaults].dictionary.dictionary.intConfig = 10;
+
+	STAssertEquals((int)[[[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"dictionary"] objectForKey:@"intConfig"] intValue], 10, @"should have the inserted object");
+}
+
 - (void) test_object_methods
 {
 	//Sets

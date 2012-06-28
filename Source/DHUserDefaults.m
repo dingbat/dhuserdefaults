@@ -115,9 +115,11 @@ static DHUserDefaults *shared = nil;
 		
 		if ([param isKindOfClass:[DHUserDefaultsDictionary class]])
 		{
-			[param setObserver:self withContext:propName];
+			[param setObserver:self];
+			[param setObserverContext:propName];
 			
 			NSDictionary *dict = [param internalObject];
+			NSLog(@"got dict %@",dict);
 			[inv setArgument:&dict atIndex:2];
 		}
 		else
@@ -127,10 +129,9 @@ static DHUserDefaults *shared = nil;
 	[inv invoke];
 }
 
-
-- (void) dictionaryUpdated:(NSDictionary *)dict context:(NSString *)context
+- (void) pseudoDictionaryWasModified:(DHUserDefaultsDictionary *)dict
 {
-	[self.internalObject setObject:dict forKey:context];
+	[self.internalObject setObject:dict.internalObject forKey:dict.observerContext];
 }
 
 - (void) returnInternalValue:(NSString *)propName forInvocation:(NSInvocation *)invocation
@@ -193,7 +194,9 @@ static DHUserDefaults *shared = nil;
 		else if ([propType isEqualToString:@"@\"DHUserDefaultsDictionary\""])
 		{
 			DHUserDefaultsDictionary *new = [DHUserDefaultsDictionary dictionaryWithDictionary:ret];
-			[new setObserver:self withContext:propName];
+			[new setObserver:self];
+			[new setObserverContext:propName];
+
 			[invocation setReturnValue:&new];
 		}
 		else	
