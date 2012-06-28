@@ -1,6 +1,6 @@
 /*
  
- DHUserDefaults.h
+ DHPseudoDictionary.h
  
  Copyright (c) 2012 Dan Hassin.
  
@@ -26,25 +26,29 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "DHPseudoDictionary.h"
-#import "DHUserDefaultsDictionary.h"
 
-@interface DHUserDefaults : DHPseudoDictionary
+@interface DHPseudoDictionary : NSObject
 
-+ (DHUserDefaults *) standardUserDefaults;
-+ (DHUserDefaults *) defaults;
-
-- (void) dictionaryUpdated:(NSDictionary *)dict context:(NSString *)context;
+@property (nonatomic, assign) id internalObject;
 
 @end
 
-// These aren't actually implemented in DHUserDefaults - these will be forwarded to the internal object
-// Xcode gets angry cause it doesn't recognize them though, so here are just some common dictionary methods
-// If you need any other ones just add them here
-//    NOTE: init methods (or factory methods) WILL NOT WORK HERE - see how +standardUserDefaults is implemented
-@interface DHUserDefaults (DHUserDefaultsForwarding)
 
-- (void) synchronize;
+@interface DHPseudoDictionary (MethodsToOverride)
+
+//methods to override
+- (void) returnInternalValue:(NSString *)key forInvocation:(NSInvocation *)inv;
+- (void) setInternalValue:(NSString *)key fromInvocation:(NSInvocation *)inv;
 
 @end
 
+
+@interface DHPseudoDictionary (DHIntrospection)
+
++ (NSString *) getAttributeForProperty:(NSString *)prop prefix:(NSString *)attrPrefix;
++ (NSString *) typeForProperty:(NSString *)prop;
++ (NSString *) getterForProperty:(NSString *)prop;
++ (NSString *) setterForProperty:(NSString *)prop;
++ (NSDictionary *) propertiesByGettersOrSetters:(int)getter0setter1;
+
+@end

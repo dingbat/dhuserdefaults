@@ -128,10 +128,13 @@
 	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 1, @"should have 1");
 	STAssertEqualObjects([[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"objectConfig"], @"hello", @"should've saved 'hello'");
 	
+	STAssertNoThrow([[DHUserDefaults defaults].dictionary setObject:@"test" forKey:@"undefkey"], nil);
+	STAssertEqualObjects([[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"undefkey"], @"test", @"should've saved 'test'");
+
 	[DHUserDefaults defaults].dictionary.intConfig = 25;
 
-	STAssertEquals((int)[DHUserDefaults defaults].dictionary.count, 2, @"should have the inserted object");	
-	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 2, @"should have 2");
+	STAssertEquals((int)[DHUserDefaults defaults].dictionary.count, 3, @"should have the inserted object");
+	STAssertEquals((int)[[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] count], 3, @"should have 2");
 	STAssertEqualObjects([[[NSUserDefaults standardUserDefaults] objectForKey:@"dictionary"] objectForKey:@"intConfig"], [NSNumber numberWithInt:25], @"should've saved the 25");
 }
 

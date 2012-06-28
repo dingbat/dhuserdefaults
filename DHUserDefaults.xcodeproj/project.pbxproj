@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		37142701159C18F3004E7C51 /* DHPseudoDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 371426FF159C18F3004E7C51 /* DHPseudoDictionary.h */; };
+		37142702159C18F3004E7C51 /* DHPseudoDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 37142700159C18F3004E7C51 /* DHPseudoDictionary.m */; };
+		37142706159C1A0C004E7C51 /* DHUserDefaultsDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 37142704159C1A0B004E7C51 /* DHUserDefaultsDictionary.h */; };
+		37142707159C1A0C004E7C51 /* DHUserDefaultsDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 37142705159C1A0C004E7C51 /* DHUserDefaultsDictionary.m */; };
 		591AE9F11576FDF900E38341 /* DHUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = 591AE9EF1576FDF900E38341 /* DHUserDefaults.h */; };
 		591AE9F21576FDF900E38341 /* DHUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = 591AE9F01576FDF900E38341 /* DHUserDefaults.m */; };
 		599C70B41576A22600060FA1 /* DHUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 599C70B31576A22600060FA1 /* DHUserDefaultsTests.m */; };
@@ -28,6 +32,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		371426FF159C18F3004E7C51 /* DHPseudoDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DHPseudoDictionary.h; sourceTree = "<group>"; };
+		37142700159C18F3004E7C51 /* DHPseudoDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHPseudoDictionary.m; sourceTree = "<group>"; };
+		37142704159C1A0B004E7C51 /* DHUserDefaultsDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DHUserDefaultsDictionary.h; sourceTree = "<group>"; };
+		37142705159C1A0C004E7C51 /* DHUserDefaultsDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHUserDefaultsDictionary.m; sourceTree = "<group>"; };
 		591AE9EF1576FDF900E38341 /* DHUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DHUserDefaults.h; sourceTree = "<group>"; };
 		591AE9F01576FDF900E38341 /* DHUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHUserDefaults.m; sourceTree = "<group>"; };
 		599C70B31576A22600060FA1 /* DHUserDefaultsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DHUserDefaultsTests.m; sourceTree = "<group>"; };
@@ -66,6 +74,10 @@
 			children = (
 				591AE9EF1576FDF900E38341 /* DHUserDefaults.h */,
 				591AE9F01576FDF900E38341 /* DHUserDefaults.m */,
+				37142704159C1A0B004E7C51 /* DHUserDefaultsDictionary.h */,
+				37142705159C1A0C004E7C51 /* DHUserDefaultsDictionary.m */,
+				371426FF159C18F3004E7C51 /* DHPseudoDictionary.h */,
+				37142700159C18F3004E7C51 /* DHPseudoDictionary.m */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -115,6 +127,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				591AE9F11576FDF900E38341 /* DHUserDefaults.h in Headers */,
+				37142701159C18F3004E7C51 /* DHPseudoDictionary.h in Headers */,
+				37142706159C1A0C004E7C51 /* DHUserDefaultsDictionary.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +229,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				591AE9F21576FDF900E38341 /* DHUserDefaults.m in Sources */,
+				37142702159C18F3004E7C51 /* DHPseudoDictionary.m in Sources */,
+				37142707159C1A0C004E7C51 /* DHUserDefaultsDictionary.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
