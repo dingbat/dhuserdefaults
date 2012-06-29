@@ -190,5 +190,13 @@
 }
 
 
+- (void) dealloc
+{
+	[internalObject release];
+	
+	[super dealloc];
+}
+
+
 @end
 

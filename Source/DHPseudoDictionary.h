@@ -29,7 +29,7 @@
 
 @interface DHPseudoDictionary : NSObject
 
-@property (nonatomic, assign) id internalObject;
+@property (nonatomic, retain) id internalObject;
 
 @end
 

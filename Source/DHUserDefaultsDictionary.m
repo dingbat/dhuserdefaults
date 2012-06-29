@@ -26,7 +26,7 @@
 - (DHUserDefaultsDictionary *) initWithDictionary:(NSDictionary *)dictionary
 {
 	self = [super init];
-	self.internalObject = [NSMutableDictionary dictionaryWithDictionary:dictionary];
+	self.internalObject = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
 	return self;
 }
 
@@ -167,6 +167,13 @@
 		double num = [obj doubleValue];
 		[invocation setReturnValue:&num];
 	}
+}
+
+- (void) dealloc
+{
+	[observerContext release];
+	
+	[super dealloc];
 }
 
 

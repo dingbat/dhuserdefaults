@@ -25,7 +25,7 @@
 + (DHUserDefaultsDictionary *) dictionaryWithDictionary:(NSDictionary *)dict;
 
 @property (nonatomic, assign) id<DHPseudoDictionaryObserving> observer;
-@property (nonatomic, strong) NSString *observerContext;
+@property (nonatomic, retain) NSString *observerContext;
 
 @end
 
