@@ -30,9 +30,14 @@
 #import "DHUserDefaultsDictionary.h"
 
 @interface DHUserDefaults : DHPseudoDictionary <DHPseudoDictionaryObserving>
+{
+	NSMutableDictionary *cache;
+}
 
 + (DHUserDefaults *) standardUserDefaults;
 + (DHUserDefaults *) defaults;
+
+- (void) loadCache;
 
 @end
 
