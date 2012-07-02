@@ -131,6 +131,10 @@ static DHUserDefaults *shared = nil;
 - (void) pseudoDictionaryWasModified:(DHUserDefaultsDictionary *)dict
 {
 	[self.internalObject setObject:dict.internalObject forKey:dict.observerContext];
+	for (id mirror in self.mirrors)
+	{
+		[self mirrorValue:dict ontoObject:mirror forProperty:dict.observerContext];
+	}
 }
 
 - (void) returnInternalValue:(NSString *)propName forInvocation:(NSInvocation *)invocation

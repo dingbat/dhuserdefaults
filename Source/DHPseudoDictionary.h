@@ -27,9 +27,18 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString * const DHUserDefaultsFinishedMirrorPropertyNotification;
+
 @interface DHPseudoDictionary : NSObject
 
 @property (nonatomic, retain) id internalObject;
+@property (nonatomic, retain) NSMutableArray *mirrors;
+
+- (void) mirrorPropertiesToObject:(id)object;
+- (void) mirrorValue:(id)value ontoObject:(NSObject *)object forProperty:(NSString *)property;
+
+- (void) mirrorProperties;
+- (void) mirrorPropertiesAsync;
 
 @end
 

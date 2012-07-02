@@ -28,8 +28,10 @@
 #import "DHPseudoDictionary.h"
 #import <objc/runtime.h>
 
+NSString * const DHUserDefaultsFinishedMirrorPropertyNotification	= @"DHUserDefaultsFinishedMirrorPropertyNotification";
+
 @implementation DHPseudoDictionary
-@synthesize internalObject;
+@synthesize internalObject, mirrors;
 
 /*******************************************
  Cool stuff
@@ -93,6 +95,11 @@
 	if (setter)
 	{
 		[self setInternalValue:propName fromInvocation:anInvocation];
+		
+		for (NSObject *mirror in mirrors)
+		{
+			[self mirrorValueFromInvocation:anInvocation useReturnValue:NO ontoObject:mirror forProperty:propName];
+		}
 	}
 	else
 	{
@@ -110,14 +117,144 @@
 	[NSException raise:@"Abstract class" format:@"setInternalValue:fromInvocation: not defined (tried to set prop %@)",key];
 }
 
+/*******************************************
+ Mirroring
+ *****************************************/
+
+- (void) mirrorValue:(id)value ontoObject:(NSObject *)object forProperty:(NSString *)property
+{
+	NSString *defaultsSelectorName = [self.class setterForProperty:property class:object.class];
+	SEL selector = NSSelectorFromString(defaultsSelectorName);
+	
+	if ([object respondsToSelector:selector])
+		[object performSelector:selector withObject:value];
+}
+
+- (void) mirrorValueFromInvocation:(NSInvocation *)invocation useReturnValue:(BOOL)ret ontoObject:(NSObject *)object forProperty:(NSString *)property
+{
+	NSString *propType = [self.class typeForProperty:property class:object.class];
+	if (!propType)
+		return;
+		
+	unichar type = [propType characterAtIndex:0];
+	
+	NSString *defaultsSelectorName = [self.class setterForProperty:property class:object.class];
+	
+	SEL selector = NSSelectorFromString(defaultsSelectorName);
+	
+	NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:selector]];
+	inv.selector = selector;
+	inv.target = object;
+		
+	if (type == 'i')
+	{
+		int param;
+		if (!ret)
+			[invocation getArgument:&param atIndex:2];
+		else
+			[invocation getReturnValue:&param];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'l')
+	{
+		long param;
+		if (!ret)
+			[invocation getArgument:&param atIndex:2];
+		else
+			[invocation getReturnValue:&param];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'c')
+	{
+		BOOL param;
+		if (!ret)
+			[invocation getArgument:&param atIndex:2];
+		else
+			[invocation getReturnValue:&param];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'f')
+	{
+		float param;
+		if (!ret)
+			[invocation getArgument:&param atIndex:2];
+		else
+			[invocation getReturnValue:&param];
+		[inv setArgument:&param atIndex:2];
+	}
+	else if (type == 'd')
+	{
+		double param;
+		if (!ret)
+			[invocation getArgument:&param atIndex:2];
+		else
+			[invocation getReturnValue:&param];
+		[inv setArgument:&param atIndex:2];
+	}
+	else
+	{
+		id param;
+		if (!ret)
+			[invocation getArgument:&param atIndex:2];
+		else
+			[invocation getReturnValue:&param];
+		[inv setArgument:&param atIndex:2];
+	}
+	
+	[inv invoke];
+}
+
+- (void) mirrorPropertiesToObject:(id)object
+{
+	if (!mirrors)
+	{
+		self.mirrors = [[NSMutableArray alloc] init];
+	}
+	
+	[mirrors addObject:object];
+}
+
+- (void) mirrorPropertiesAsync
+{
+	dispatch_async(dispatch_get_global_queue(0, 0), ^{
+		[self mirrorProperties];
+	});
+}
+
+- (void) mirrorProperties
+{
+	if (mirrors.count == 0)
+		return;
+	
+	NSDictionary *properties = [self.class propertiesByGettersOrSetters:0];
+	for (NSString *getter in properties)
+	{
+		SEL sel = NSSelectorFromString(getter);
+		NSString *property = [properties objectForKey:getter];
+		NSInvocation *inv = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:sel]];
+		inv.target = self;
+		inv.selector = sel;
+		
+		[inv invoke];
+		
+		for (NSObject *mirror in mirrors)
+		{
+			[self mirrorValueFromInvocation:inv useReturnValue:YES ontoObject:mirror forProperty:property];
+		}
+		
+		[[NSNotificationCenter defaultCenter] postNotificationName:DHUserDefaultsFinishedMirrorPropertyNotification
+														object:self userInfo:[NSDictionary dictionaryWithObject:property forKey:@"keyPath"]];
+	}
+}
+
 
 /*******************************************
  Introspection
  *****************************************/
 
-+ (NSString *) getAttributeForProperty:(NSString *)prop prefix:(NSString *)attrPrefix
++ (NSString *) getAttributeForProperty:(NSString *)prop prefix:(NSString *)attrPrefix class:(Class)class
 {
-	objc_property_t property = class_getProperty(self, [prop UTF8String]);
+	objc_property_t property = class_getProperty(class, [prop UTF8String]);
 	if (!property)
 		return nil;
 	
@@ -135,21 +272,26 @@
 
 + (NSString *) typeForProperty:(NSString *)prop
 {
-	return [self getAttributeForProperty:prop prefix:@"T"];
+	return [self getAttributeForProperty:prop prefix:@"T" class:self];
+}
+
++ (NSString *) typeForProperty:(NSString *)prop class:(Class)c
+{
+	return [self getAttributeForProperty:prop prefix:@"T" class:c];
 }
 
 + (NSString *) getterForProperty:(NSString *)prop
 {
-	NSString *s = [self getAttributeForProperty:prop prefix:@"G"];
+	NSString *s = [self getAttributeForProperty:prop prefix:@"G" class:self];
 	if (!s)
 		s = prop;
 	
 	return s;
 }
 
-+ (NSString *) setterForProperty:(NSString *)prop
++ (NSString *) setterForProperty:(NSString *)prop class:(Class)c
 {
-	NSString *s = [self getAttributeForProperty:prop prefix:@"S"];
+	NSString *s = [self getAttributeForProperty:prop prefix:@"S" class:c];
 	if (!s)
 	{
 		NSString *uppercaseProp = [[[prop substringToIndex:1] uppercaseString] stringByAppendingString:[prop substringFromIndex:1]];
@@ -157,6 +299,11 @@
 	}
 	
 	return s;
+}
+
++ (NSString *) setterForProperty:(NSString *)prop
+{
+	return [self setterForProperty:prop class:self];
 }
 
 + (NSDictionary *) propertiesByGettersOrSetters:(int)getter0setter1
@@ -192,6 +339,7 @@
 
 - (void) dealloc
 {
+	[mirrors release];
 	[internalObject release];
 	
 	[super dealloc];
