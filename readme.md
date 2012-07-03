@@ -36,6 +36,29 @@ into this:
 
 ### **o_o**
 
+********
+
+********
+
+*********
+
+# WARNINGWARNINGWARNINGWARNINGWARNINGWARNING
+
+**I 100% discourage you from using this.** It was a fun project and all and would've been cool but performs **horribly** in a production app. Forwarding invocations and constructing method signatures and everything is (to my surprise) a giant CPU drain.
+
+Your app **will** experience very significant lag whenever accessing NSUserDefaults through DHUserDefaults. I've even implemented several solutions like mirroring and caching (both of which you can check out the branches for), but nothing worked in the end like good ol' `[[NSUserDefaults standardUserDefaults] objectForKey:]`. Stick with it.
+
+Sorry!
+
+-Dan
+
+PS: You *could* dispatch all your gets and sets asynchronously, but that's just more trouble. If you hate writing it out *that much* (as I do) write up some macros!
+
+******
+
+********
+
+*********
 
 How do I use this thing?
 --------------
